@@ -1,0 +1,15 @@
+@media (max-width: 1100px) {
+  .three-column-page,
+  .review-page {
+    grid-template-columns: 1fr;
+  }
+
+  .side-panel {
+    min-height: auto;
+  }
+
+  .hidden-draft-input,
+  .read-draft-input {
+    display: none;
+  }
+}

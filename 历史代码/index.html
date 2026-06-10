@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>上海事业单位面试模拟 - 专业级AI智能控制台</title>
+    <link rel="stylesheet" href="style.css?v=1.2">
+    <!-- FontAwesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <!-- ==================== TOP NAVIGATION BAR ==================== -->
+    <header class="nav-bar">
+        <div class="nav-logo">
+            <i class="fa-solid fa-graduation-cap logo-icon"></i>
+            <span>上海事业单位面试模拟</span>
+        </div>
+        
+        <nav class="nav-tabs">
+            <div class="nav-tab active" data-tab="setup"><i class="fa-solid fa-user-gear"></i> 岗位设置</div>
+            <div class="nav-tab" data-tab="qbank"><i class="fa-solid fa-book-open"></i> 题库专项</div>
+            <div class="nav-tab" data-tab="simulation"><i class="fa-solid fa-desktop"></i> 模拟面试</div>
+            <div class="nav-tab" data-tab="report"><i class="fa-solid fa-chart-pie"></i> AI报告</div>
+            <div class="nav-tab" data-tab="history"><i class="fa-solid fa-history"></i> 练习记录</div>
+        </nav>
+        
+        <div class="nav-user">
+            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80" alt="Avatar" class="user-avatar">
+            <span class="user-name">考生1234 <i class="fa-solid fa-caret-down"></i></span>
+        </div>
+    </header>
+
+    <!-- ==================== MAIN VIEW CONTAINER ==================== -->
+    <main class="main-content">
+
+        <!-- 1. SETUP VIEW (岗位设置 - 对应图1) -->
+        <div id="view-setup" class="tab-view active">
+            <!-- Setup Banner -->
+            <div class="setup-banner-card">
+                <div class="setup-banner-bg"></div>
+                <div class="setup-banner-overlay">
+                    <div class="examiners-mini-row">
+                        <img src="assets/interviewers.png" alt="考官群像" class="mini-examiners-img">
+                    </div>
+                    <div class="banner-text-info">
+                        <h1>欢迎进入模拟面试</h1>
+                        <p>真实面试流程 • AI智能评分 • 结合岗位JD深度匹配 • 智能诊断表达习惯</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="setup-main-grid">
+                <!-- Left: Job config form -->
+                <div class="glass-card form-card">
+                    <h2><i class="fa-solid fa-id-card-clip text-accent-color"></i> 岗位信息设置 <span class="tip-subtext">AI评分将结合岗位信息评估“人岗匹配度”</span></h2>
+                    
+                    <div class="form-row-double">
+                        <div class="form-group">
+                            <label>报考岗位 <span class="req">*</span></label>
+                            <input type="text" id="job-title" value="重大项目协调岗" placeholder="请输入报考岗位，例如：重大项目协调岗">
+                        </div>
+                        <div class="form-group">
+                            <label>报考单位 / 系统 <span class="req">*</span></label>
+                            <input type="text" id="job-unit" value="上海某区事业单位" placeholder="请输入报考单位，例如：上海某区直属机关">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>岗位职责关键词 <span class="req">*</span></label>
+                        <div class="tags-input-container" id="job-keywords-container">
+                            <span class="keyword-tag">沟通协调 <i class="fa-solid fa-xmark remove-tag"></i></span>
+                            <span class="keyword-tag">综合分析 <i class="fa-solid fa-xmark remove-tag"></i></span>
+                            <span class="keyword-tag">服务意识 <i class="fa-solid fa-xmark remove-tag"></i></span>
+                            <span class="keyword-tag">落地执行 <i class="fa-solid fa-xmark remove-tag"></i></span>
+                            <button class="btn-add-tag-inline" id="btn-add-keyword"><i class="fa-solid fa-plus"></i> 添加</button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>岗位说明 / JD <span class="req">*</span></label>
+                        <textarea id="job-jd" rows="4" placeholder="请输入具体岗位说明，例如：负责重大项目推进过程中的跨部门沟通协调、进度跟踪与问题解决...">负责重大项目推进过程中的跨部门沟通协调、进度跟踪与问题解决；撰写项目相关材料与汇报；协助领导开展调研、会议组织与督办落实；对接上级部门与相关单位，确保项目按时高质量落地。</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>个人经历亮点 <span class="req">*</span></label>
+                        <textarea id="job-experience" rows="3" placeholder="简要描述您的个人核心竞争力，例如：具备跨部门协作与项目推进经验，擅长协调沟通...">具备跨部门协作与项目推进经验，擅长沟通协调与问题解决；有多次材料撰写与汇报经验；工作认真负责，执行力强，注重细节与结果。</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>作答风格偏好 <span class="req">(可选)</span></label>
+                        <select id="job-style">
+                            <option value="logical" selected>逻辑清晰，结构化表达，语言简洁有力，注重落地和可执行性</option>
+                            <option value="policy">政治站位高，理论功底扎实，紧扣时政热点，善用官方语态</option>
+                            <option value="masses">富有亲和力，沟通技巧熟练，语言通俗生动，善于处理干群矛盾</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-tip-banner">
+                        <i class="fa-solid fa-circle-info text-accent-color"></i>
+                        <span>提示：填写准确的岗位信息有助于AI更精准地评估您的“人岗匹配度”，并提供更具针对性的反馈建议。</span>
+                    </div>
+                </div>
+
+                <!-- Right: Settings & Start Mock -->
+                <div class="settings-sidebar">
+                    <!-- Config Modes -->
+                    <div class="glass-card sidebar-block">
+                        <h2>模拟方式</h2>
+                        <div class="mock-mode-selection">
+                            <div class="mode-card active" data-mode="full-test">
+                                <div class="mode-icon"><i class="fa-solid fa-cubes-stacked"></i></div>
+                                <div class="mode-info">
+                                    <h3>整套三题模拟</h3>
+                                    <p>按真实面试流程，连续作答 3 道题</p>
+                                </div>
+                                <div class="mode-badge-checked"><i class="fa-solid fa-circle-check"></i></div>
+                            </div>
+                            <div class="mode-card" data-mode="single-test">
+                                <div class="mode-icon"><i class="fa-solid fa-cube"></i></div>
+                                <div class="mode-info">
+                                    <h3>题型专项模拟</h3>
+                                    <p>按题型进行强化练习，每次作答 1 题</p>
+                                </div>
+                                <div class="mode-badge-checked"><i class="fa-solid fa-circle-check"></i></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Config switches -->
+                    <div class="glass-card sidebar-block">
+                        <h2>答题设置</h2>
+                        <div class="switches-list">
+                            <div class="setting-switch-item">
+                                <div class="switch-txt">
+                                    <h3>每题作答时长</h3>
+                                    <p>规定考生的答题倒计时限制</p>
+                                </div>
+                                <select id="setup-answering-time" class="select-sm">
+                                    <option value="120">2 分钟</option>
+                                    <option value="180">3 分钟</option>
+                                    <option value="240" selected>4 分钟</option>
+                                    <option value="300">5 分钟</option>
+                                    <option value="0">不限制</option>
+                                </select>
+                            </div>
+                            
+                            <div class="setting-switch-item">
+                                <div class="switch-txt">
+                                    <h3>是否朗读试题</h3>
+                                    <p>考官语音自动朗读题目</p>
+                                </div>
+                                <label class="switch-control">
+                                    <input type="checkbox" id="setup-read-tts" checked>
+                                    <span class="switch-slider"></span>
+                                </label>
+                            </div>
+
+                            <div class="setting-switch-item">
+                                <div class="switch-txt">
+                                    <h3>是否实时转写</h3>
+                                    <p>麦克风录音并显示文字</p>
+                                </div>
+                                <label class="switch-control">
+                                    <input type="checkbox" id="setup-write-stt" checked>
+                                    <span class="switch-slider"></span>
+                                </label>
+                            </div>
+
+                            <div class="setting-switch-item">
+                                <div class="switch-txt">
+                                    <h3>是否开启AI点评</h3>
+                                    <p>提交后进行多维度AI评分</p>
+                                </div>
+                                <label class="switch-control">
+                                    <input type="checkbox" id="setup-ai-review" checked>
+                                    <span class="switch-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Gemini API Key Configuration -->
+                    <div class="glass-card sidebar-block">
+                        <h2>AI 引擎设置</h2>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label>Gemini API 密钥 <span class="tip-subtext">(如需高精智能评分请配置)</span></label>
+                            <input type="password" id="api-key-input" placeholder="输入 AI API Key (例如: AIzaSy...)" style="width: 100%; margin-top: 6px;">
+                        </div>
+                    </div>
+
+                    <!-- Setup actions -->
+                    <div class="glass-card sidebar-block bg-gradient-action">
+                        <h2>本次模拟预览</h2>
+                        <div class="preview-tags">
+                            <span class="prev-tag"><i class="fa-solid fa-building-columns"></i> <span id="lbl-prev-unit">上海某区事业单位</span></span>
+                            <span class="prev-tag"><i class="fa-solid fa-layer-group"></i> <span id="lbl-prev-mode">3题连考</span></span>
+                            <span class="prev-tag"><i class="fa-solid fa-microphone"></i> 语音转文字</span>
+                            <span class="prev-tag"><i class="fa-solid fa-brain"></i> AI多维度评分</span>
+                        </div>
+                        <div class="setup-btn-row">
+                            <button class="btn btn-secondary" id="btn-save-setup-info">保存岗位信息</button>
+                            <button class="btn btn-primary btn-glow" id="btn-trigger-mock-start"><i class="fa-solid fa-circle-play"></i> 开始模拟面试</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. QUESTION BANK VIEW (题库专项 - 对应图3) -->
+        <div id="view-qbank" class="tab-view">
+            <!-- QBank Banner -->
+            <div class="qbank-banner">
+                <div class="qbank-banner-bg"></div>
+                <div class="qbank-banner-overlay">
+                    <h1>上海事业单位定制化试题库</h1>
+                    <p>贴合岗位 • 紧扣热点 • 人岗匹配 • 专为上海事业单位面试打造</p>
+                </div>
+            </div>
+
+            <!-- QBank Filters Header -->
+            <div class="glass-card qbank-filter-card">
+                <div class="filter-controls-row">
+                    <div class="filter-select-group">
+                        <label>岗位关联：</label>
+                        <select id="qbank-job-filter" style="width: 200px;">
+                            <option value="major-coord">重大项目协调岗</option>
+                            <option value="edu-admin">教育行政管理岗</option>
+                            <option value="health-admin">医疗卫生管理岗</option>
+                            <option value="community-worker">基层社区管理岗</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-hot-buttons">
+                        <button class="btn btn-secondary btn-sm active" data-filter="shanghai-hot"><i class="fa-solid fa-fire text-danger-color"></i> 上海热点</button>
+                        <button class="btn btn-secondary btn-sm" data-filter="high-freq"><i class="fa-solid fa-chart-line"></i> 高频考题</button>
+                        <button class="btn btn-secondary btn-sm" data-filter="recent-practices"><i class="fa-solid fa-clock-rotate-left"></i> 最新练习</button>
+                    </div>
+
+                    <div class="filter-search-box">
+                        <input type="text" id="qbank-search-input" placeholder="搜索题目、关键词或题号...">
+                        <button id="qbank-btn-search"><i class="fa-solid fa-magnifying-glass"></i></button>
+                    </div>
+                    
+                    <button class="btn btn-secondary btn-sm"><i class="fa-solid fa-filter"></i> 筛选</button>
+                </div>
+            </div>
+
+            <!-- QBank Body Layout -->
+            <div class="qbank-layout-grid">
+                <!-- Sidebar Question categories -->
+                <div class="qbank-sidebar">
+                    <div class="glass-card sidebar-menu-card">
+                        <h3>专项题型</h3>
+                        <div class="qbank-cat-list">
+                            <div class="qbank-cat-item" data-cat="comprehensive">
+                                <span>综合分析</span>
+                                <span class="cat-count">386</span>
+                            </div>
+                            <div class="qbank-cat-item" data-cat="organization">
+                                <span>组织管理</span>
+                                <span class="cat-count">248</span>
+                            </div>
+                            <div class="qbank-cat-item" data-cat="emergency">
+                                <span>应急应变</span>
+                                <span class="cat-count">218</span>
+                            </div>
+                            <div class="qbank-cat-item" data-cat="interpersonal">
+                                <span>人际沟通</span>
+                                <span class="cat-count">176</span>
+                            </div>
+                            <div class="qbank-cat-item active" data-cat="self-matching">
+                                <span>自我认知与岗位匹配</span>
+                                <span class="cat-count">156</span>
+                            </div>
+                            <div class="qbank-cat-item" data-cat="policy-understanding">
+                                <span>政策理解</span>
+                                <span class="cat-count">132</span>
+                            </div>
+                            <div class="qbank-cat-item" data-cat="local-governance">
+                                <span>上海基层治理 / 城市更新</span>
+                                <span class="cat-count">128</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-card mini-job-widget">
+                        <div class="mini-widget-title">我的岗位信息 <i class="fa-solid fa-circle-chevron-down"></i></div>
+                        <div class="mini-widget-content">
+                            <span class="label">当前关联岗位</span>
+                            <h4 id="lbl-sidebar-job">重大项目协调岗</h4>
+                            <a href="#" class="edit-link" id="lnk-edit-job-info"><i class="fa-solid fa-pen-to-square"></i> 去修改岗位信息</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Content Question List -->
+                <div class="qbank-main">
+                    <div class="qbank-header-actions">
+                        <h2>自我认知与岗位匹配 • 题库 <span class="badge-total-num">共 156 道</span></h2>
+                        <div class="view-toggle-mode">
+                            <button class="btn btn-secondary btn-sm active" id="btn-mode-cat-pract"><i class="fa-solid fa-list-check"></i> 按题型练习</button>
+                            <button class="btn btn-secondary btn-sm" id="btn-mode-triple-pract"><i class="fa-solid fa-cubes"></i> 整套三题模拟</button>
+                        </div>
+                    </div>
+
+                    <!-- Questions Grid List -->
+                    <div class="qbank-questions-list" id="qbank-questions-container">
+                        <!-- Questions are dynamically inserted here -->
+                    </div>
+                </div>
+
+                <!-- Right Sidebar recommended combo -->
+                <div class="qbank-right-column">
+                    <div class="glass-card combo-recommendation-card">
+                        <div class="combo-title-badge"><i class="fa-solid fa-star"></i> 推荐三题组合</div>
+                        <div class="combo-subtitle">贴合岗位 • 综合提升</div>
+                        <p class="combo-desc">精选本题型高频考点，三题连考，模拟真实面试。</p>
+                        
+                        <div class="combo-steps">
+                            <div class="combo-step-number">1</div>
+                            <div class="combo-step-plus">+</div>
+                            <div class="combo-step-number">2</div>
+                            <div class="combo-step-plus">+</div>
+                            <div class="combo-step-number">3</div>
+                        </div>
+                        
+                        <div class="combo-time-est"><i class="fa-regular fa-clock"></i> 预计用时: 12 分钟</div>
+                        <button class="btn btn-primary btn-block" id="btn-start-combo-mock"><i class="fa-solid fa-rocket"></i> 开始三题模拟</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. INTERVIEW SIMULATION VIEW (模拟面试 - 对应图2) -->
+        <div id="view-simulation" class="tab-view">
+            <!-- Simulated background representing the row of examiners -->
+            <div class="simulation-examiners-banner">
+                <div class="sim-banner-bg" id="sim-banner-bg-pic"></div>
+                <div class="sim-banner-vignette"></div>
+                
+                <!-- Overlay details -->
+                <div class="sim-banner-overlay-content">
+                    <div class="sim-status-pill"><span class="sim-dot-pulse"></span> 面试中</div>
+                </div>
+            </div>
+            
+            <!-- Collapsible Candidate Desk Wrapper -->
+            <div id="candidate-desk-zone" class="candidate-desk-zone">
+                <!-- Collapsible Toggle Bar -->
+                <div class="desk-toggle-bar" id="desk-toggle-trigger">
+                    <i class="fa-solid fa-chevron-down" id="desk-toggle-icon"></i>
+                    <span id="desk-toggle-text">收起考生席</span>
+                </div>
+
+                <div class="candidate-desk-content">
+                    <!-- Metadata ribbon -->
+                    <div class="simulation-meta-ribbon">
+                        <div class="sim-meta-item"><i class="fa-solid fa-id-badge text-accent-color"></i> 报考岗位：<span id="lbl-sim-job">重大项目协调岗</span></div>
+                        <div class="sim-meta-item"><i class="fa-solid fa-building"></i> 报考单位：<span id="lbl-sim-unit">上海某区事业单位</span></div>
+                        <div class="sim-meta-item"><i class="fa-solid fa-tags"></i> 考核核心：沟通协调 / 综合分析 / 人岗匹配</div>
+                        <div class="sim-meta-badge"><i class="fa-solid fa-shield-halved"></i> 上海事业单位面试规范</div>
+                    </div>
+
+                    <!-- Simulation Body Grid (Three Columns) -->
+                    <div class="simulation-workspace-grid">
+                        
+                        <!-- Column 1: Left Question Card -->
+                        <div class="glass-card sim-card-question">
+                            <div class="question-header">
+                                <div class="question-pagenum" id="sim-question-pagenum">1 / 3</div>
+                                <button class="btn btn-secondary btn-sm" id="btn-sim-speak-question"><i class="fa-solid fa-volume-high"></i> 朗读试题</button>
+                            </div>
+                            
+                            <div class="question-body-container">
+                                <p class="question-text-saas" id="sim-question-text">
+                                    加载题目中...
+                                </p>
+                            </div>
+                            
+                            <!-- Accordion guidance -->
+                            <div class="guidance-accordion" id="sim-guidance-accordion">
+                                <div class="accordion-header" id="btn-toggle-guidance">
+                                    <span><i class="fa-regular fa-lightbulb"></i> 答题思路提示 (可选)</span>
+                                    <i class="fa-solid fa-chevron-down accordion-arrow" id="guidance-arrow"></i>
+                                </div>
+                                <div class="accordion-body collapsed" id="guidance-body-text">
+                                    <!-- Hints are dynamically loaded -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Column 2: Center Recording & Timers -->
+                        <div class="glass-card sim-card-recording">
+                            <div class="recording-timer-header">
+                                <span class="recording-label"><i class="fa-solid fa-hourglass-half"></i> 答题倒计时</span>
+                                <span class="timer-countdown-value" id="sim-answering-timer">04:00</span>
+                                <button class="btn btn-secondary btn-sm" id="btn-sim-skip-thinking" style="display: none;">跳过思考</button>
+                            </div>
+
+                            <div class="recording-central-hud">
+                                <div class="hud-recording-state" id="lbl-sim-record-state">系统正在录音并实时转写...</div>
+                                
+                                <!-- Circular mic button with equalizers -->
+                                <div class="mic-circle-outer" id="btn-sim-mic-trigger">
+                                    <div class="mic-pulse-ring"></div>
+                                    <div class="mic-circle-inner">
+                                        <i class="fa-solid fa-microphone"></i>
+                                    </div>
+                                    <!-- Live equalizer sound waves inside head -->
+                                    <div class="sound-wave-eq-container" id="sim-eq-container">
+                                        <span class="eq-bar"></span>
+                                        <span class="eq-bar"></span>
+                                        <span class="eq-bar"></span>
+                                        <span class="eq-bar"></span>
+                                        <span class="eq-bar"></span>
+                                        <span class="eq-bar"></span>
+                                        <span class="eq-bar"></span>
+                                        <span class="eq-bar"></span>
+                                        <span class="eq-bar"></span>
+                                        <span class="eq-bar"></span>
+                                    </div>
+                                </div>
+                                
+                                <div class="mic-recording-lbl"><span class="mic-record-dot" id="sim-record-dot-indicator"></span> <span id="lbl-sim-mic-text">录音中</span></div>
+                            </div>
+
+                            <!-- Transcript real-time card -->
+                            <div class="transcription-monitor-panel">
+                                <div class="panel-header-title">实时转写</div>
+                                <div class="transcription-body-monitor" id="sim-transcript-box">
+                                    <div class="transcription-placeholder">考官读题结束后将自动启动麦克风。若未启动，请允许麦克风权限或点击“开始答题”按钮。</div>
+                                </div>
+                            </div>
+
+                            <!-- Active buttons -->
+                            <div class="sim-actions-row">
+                                <button class="btn btn-primary" id="btn-sim-start-answer"><i class="fa-solid fa-play"></i> 开始答题</button>
+                                <button class="btn btn-secondary" id="btn-sim-finish-this"><i class="fa-solid fa-forward-step"></i> 结束本题</button>
+                                <button class="btn btn-secondary" id="btn-sim-next-question" disabled><i class="fa-solid fa-chevron-right"></i> 下一题</button>
+                            </div>
+                        </div>
+
+                        <!-- Column 3: Right Live evaluation skeleton -->
+                        <div class="glass-card sim-card-evaluation-placeholder">
+                            <h2>AI评分结果 <span class="eval-placeholder-tag">本场结束后生成</span></h2>
+                            
+                            <div class="eval-total-score-box">
+                                <div class="score-circle-placeholder">
+                                    <span class="score-num">--</span>
+                                    <span class="score-txt">总分</span>
+                                </div>
+                                <p>本场面试结束后将结合您的岗位信息，基于上海事业单位面试评分标准进行智能评分。</p>
+                            </div>
+
+                            <div class="eval-dimensions-progress">
+                                <h3>评分维度</h3>
+                                <div class="eval-dim-item">
+                                    <div class="eval-dim-lbl"><span>人岗匹配度</span><span>-- / 20</span></div>
+                                    <div class="progress-bar-container"><div class="progress-bar-fill" style="width: 0%"></div></div>
+                                </div>
+                                <div class="eval-dim-item">
+                                    <div class="eval-dim-lbl"><span>岗位理解</span><span>-- / 20</span></div>
+                                    <div class="progress-bar-container"><div class="progress-bar-fill" style="width: 0%"></div></div>
+                                </div>
+                                <div class="eval-dim-item">
+                                    <div class="eval-dim-lbl"><span>综合分析能力</span><span>-- / 20</span></div>
+                                    <div class="progress-bar-container"><div class="progress-bar-fill" style="width: 0%"></div></div>
+                                </div>
+                                <div class="eval-dim-item">
+                                    <div class="eval-dim-lbl"><span>逻辑表达能力</span><span>-- / 20</span></div>
+                                    <div class="progress-bar-container"><div class="progress-bar-fill" style="width: 0%"></div></div>
+                                </div>
+                                <div class="eval-dim-item">
+                                    <div class="eval-dim-lbl"><span>语言感染力</span><span>-- / 20</span></div>
+                                    <div class="progress-bar-container"><div class="progress-bar-fill" style="width: 0%"></div></div>
+                                </div>
+                                <div class="eval-dim-item">
+                                    <div class="eval-dim-lbl"><span>仪态与稳定度</span><span>-- / 20</span></div>
+                                    <div class="progress-bar-container"><div class="progress-bar-fill" style="width: 0%"></div></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Simulation bottom control deck -->
+                    <div class="simulation-footer-deck">
+                        <div class="footer-left-utils">
+                            <span><i class="fa-solid fa-plug-circle-check"></i> 设备检测</span>
+                            <span><i class="fa-solid fa-circle-question"></i> 使用帮助</span>
+                        </div>
+                        <div class="footer-center-tips">建议在安静环境下作答，保持与麦克风距离适中，避免遮挡。</div>
+                        <div class="footer-right-actions">
+                            <button class="btn btn-primary btn-glow" id="btn-sim-submit-all"><i class="fa-solid fa-square-poll-vertical"></i> 结束本场面试并查看报告</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. AI REPORT VIEW (AI报告 - 对应图4) -->
+        <div id="view-report" class="tab-view">
+            <!-- Report Header Card -->
+            <div class="report-header-banner">
+                <div class="report-banner-bg"></div>
+                <div class="report-banner-overlay">
+                    <span class="report-badge-top">本报告由AI生成，仅供参考</span>
+                    <h1>AI模拟面试报告</h1>
+                    <p class="report-banner-details">
+                        报考岗位：<span id="lbl-rep-job">重大项目协调岗</span> | 
+                        本次为：<span id="lbl-rep-mode">整套三题模拟</span> | 
+                        已结合岗位JD与亮点经历评定
+                    </p>
+                    <div class="report-banner-time"><i class="fa-regular fa-calendar-check"></i> 面试时间：<span id="lbl-rep-date">2026-06-02 11:25</span> | <i class="fa-regular fa-clock"></i> 答题时长：<span id="lbl-rep-duration">11分42秒</span></div>
+                </div>
+            </div>
+
+            <!-- Metrics Summary Cards -->
+            <div class="report-metrics-row">
+                <!-- Overall Score -->
+                <div class="glass-card metric-card-box">
+                    <div class="metric-lbl-title">综合得分 <i class="fa-solid fa-circle-info"></i></div>
+                    <div class="metric-score-display">
+                        <span class="score-large-num" id="lbl-rep-score">84</span>
+                        <span class="score-denominator">/100</span>
+                    </div>
+                    <div class="metric-progress-summary">
+                        <span>超越 <strong id="lbl-rep-percent">76%</strong> 的考生</span>
+                        <div class="progress-bar-container mini-bar"><div class="progress-bar-fill" id="bar-rep-overall" style="width: 76%"></div></div>
+                    </div>
+                </div>
+
+                <!-- Job Matching -->
+                <div class="glass-card metric-card-box">
+                    <div class="metric-lbl-title">人岗匹配度 <i class="fa-solid fa-circle-info"></i></div>
+                    <div class="metric-level-display">
+                        <span class="level-letter" id="lbl-rep-match-letter">A</span>
+                        <span class="level-sub-score">(<span id="lbl-rep-match-score">18</span>/20)</span>
+                    </div>
+                    <div class="metric-verdict text-success-color" id="lbl-rep-match-verdict"><i class="fa-solid fa-circle-check"></i> 匹配度较高，岗位契合度良好</div>
+                </div>
+
+                <!-- Stability -->
+                <div class="glass-card metric-card-box">
+                    <div class="metric-lbl-title">表达稳定度 <i class="fa-solid fa-circle-info"></i></div>
+                    <div class="metric-level-display">
+                        <span class="level-number-display" id="lbl-rep-stable-score">16</span>
+                        <span class="level-sub-score">/20</span>
+                    </div>
+                    <div class="metric-verdict text-accent-color"><i class="fa-solid fa-circle-check"></i> 表现稳定，临场应变较好</div>
+                </div>
+
+                <!-- Trends/Growth -->
+                <div class="glass-card metric-card-box">
+                    <div class="metric-lbl-title">本次排名 / 成长趋势 <i class="fa-solid fa-circle-info"></i></div>
+                    <div class="metric-rank-display">
+                        <span>前 <strong id="lbl-rep-rank">23%</strong></span>
+                        <span class="trend-up"><i class="fa-solid fa-arrow-trend-up"></i> 较上次提升 15%</span>
+                    </div>
+                    <div class="trend-sparkline-canvas">
+                        <canvas id="canvas-sparkline" width="220" height="40"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Deep Analysis Grid -->
+            <div class="report-analysis-grid">
+                
+                <!-- Dimensions card -->
+                <div class="glass-card analysis-block-dimensions">
+                    <h2>综合评分维度 <i class="fa-solid fa-circle-info"></i></h2>
+                    
+                    <div class="eval-dimensions-progress custom-report-dims">
+                        <div class="eval-dim-item">
+                            <div class="eval-dim-lbl"><span><i class="fa-solid fa-user-tie"></i> 人岗匹配度</span><span class="text-level-label">优秀</span><strong><span id="score-dim-match">18</span>/20</strong></div>
+                            <div class="progress-bar-container"><div class="progress-bar-fill" id="bar-dim-match" style="width: 90%"></div></div>
+                        </div>
+                        <div class="eval-dim-item">
+                            <div class="eval-dim-lbl"><span><i class="fa-solid fa-bullseye"></i> 岗位理解</span><span class="text-level-label">良好</span><strong><span id="score-dim-understand">15</span>/20</strong></div>
+                            <div class="progress-bar-container"><div class="progress-bar-fill" id="bar-dim-understand" style="width: 75%"></div></div>
+                        </div>
+                        <div class="eval-dim-item">
+                            <div class="eval-dim-lbl"><span><i class="fa-solid fa-brain"></i> 综合分析能力</span><span class="text-level-label">良好</span><strong><span id="score-dim-analysis">16</span>/20</strong></div>
+                            <div class="progress-bar-container"><div class="progress-bar-fill" id="bar-dim-analysis" style="width: 80%"></div></div>
+                        </div>
+                        <div class="eval-dim-item">
+                            <div class="eval-dim-lbl"><span><i class="fa-solid fa-align-left"></i> 逻辑表达能力</span><span class="text-level-label">良好</span><strong><span id="score-dim-logic">16</span>/20</strong></div>
+                            <div class="progress-bar-container"><div class="progress-bar-fill" id="bar-dim-logic" style="width: 80%"></div></div>
+                        </div>
+                        <div class="eval-dim-item">
+                            <div class="eval-dim-lbl"><span><i class="fa-solid fa-microphone-lines"></i> 语言感染力</span><span class="text-level-label">良好</span><strong><span id="score-dim-expression">15</span>/20</strong></div>
+                            <div class="progress-bar-container"><div class="progress-bar-fill" id="bar-dim-expression" style="width: 75%"></div></div>
+                        </div>
+                        <div class="eval-dim-item">
+                            <div class="eval-dim-lbl"><span><i class="fa-solid fa-people-arrows"></i> 仪态与稳定度</span><span class="text-level-label">良好</span><strong><span id="score-dim-manner">14</span>/20</strong></div>
+                            <div class="progress-bar-container"><div class="progress-bar-fill" id="bar-dim-manner" style="width: 70%"></div></div>
+                        </div>
+                    </div>
+                    
+                    <p class="dimensions-note-text">评分说明：依据上海事业单位面试评分要点，结合岗位要求与回答表现综合评定。</p>
+                </div>
+
+                <!-- Job Compatibility analysis -->
+                <div class="glass-card analysis-block-jd">
+                    <h2>岗位匹配分析 (AI解读) <i class="fa-solid fa-circle-info"></i></h2>
+                    
+                    <div class="jd-ai-intro-badge">
+                        <i class="fa-solid fa-robot"></i> AI评分已参考您的岗位信息（<span id="lbl-rep-jd-job">重大项目协调岗</span>）
+                        <button class="btn btn-secondary btn-xs btn-inline-check" id="btn-view-job-details">查看岗位要求</button>
+                    </div>
+
+                    <div class="jd-matching-points-list" id="rep-jd-points-container">
+                        <div class="jd-point-item">
+                            <div class="point-header-title">沟通协调</div>
+                            <div class="point-desc">能从多方角度出发，提出协同思路，体现良好沟通意识与推动力。</div>
+                        </div>
+                        <div class="jd-point-item">
+                            <div class="point-header-title">综合分析</div>
+                            <div class="point-desc">能抓住问题本质，结合实际分析原因，提出可行性建议。</div>
+                        </div>
+                        <div class="jd-point-item">
+                            <div class="point-header-title">项目推进</div>
+                            <div class="point-desc">具备一定的计划性与执行意识，能考虑资源整合与时间节点。</div>
+                        </div>
+                        <div class="jd-point-item">
+                            <div class="point-header-title">服务意识</div>
+                            <div class="point-desc">体现出为公众与单位服务的意识，关注群众与团队需求。</div>
+                        </div>
+                    </div>
+
+                    <div class="jd-overall-verdict-box">
+                        <span class="verdict-label">总体评价：</span>
+                        <span id="lbl-rep-overall-verdict">契合岗位核心能力要求，具备较好的项目协调与推进潜力。</span>
+                    </div>
+                </div>
+
+                <!-- Sidebar Report tools -->
+                <div class="report-tools-sidebar">
+                    <button class="btn btn-primary btn-block" id="btn-rep-view-details"><i class="fa-solid fa-circle-chevron-down"></i> 查看逐题详情</button>
+                    <button class="btn btn-secondary btn-block" id="btn-rep-download-pdf"><i class="fa-solid fa-file-pdf"></i> 下载报告 (PDF)</button>
+                    <button class="btn btn-secondary btn-block" id="btn-rep-share"><i class="fa-solid fa-share-nodes"></i> 分享报告</button>
+                    <button class="btn btn-secondary btn-block" id="btn-rep-restart"><i class="fa-solid fa-rotate-right"></i> 再来一场模拟</button>
+                </div>
+            </div>
+
+            <!-- Three questions performance section -->
+            <div class="report-section-title">三道题作答表现</div>
+            <div class="report-triple-cards-grid" id="rep-triple-cards-container">
+                <!-- Question cards generated dynamically -->
+            </div>
+
+            <!-- Strengths and Weaknesses Detailed -->
+            <div class="report-strengths-grid">
+                <div class="glass-card evaluation-block">
+                    <h3 class="strengths"><i class="fa-solid fa-circle-check"></i> 优点总结</h3>
+                    <div class="evaluation-list" id="rep-strengths-container">
+                        <!-- strengths list -->
+                    </div>
+                </div>
+
+                <div class="glass-card evaluation-block">
+                    <h3 class="weaknesses"><i class="fa-solid fa-circle-xmark"></i> 改进建议</h3>
+                    <div class="evaluation-list" id="rep-weaknesses-container">
+                        <!-- weaknesses list -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Habits, filler words and structure advice -->
+            <div class="report-habits-grid">
+                <!-- Filler words counters -->
+                <div class="glass-card habits-card">
+                    <h2>高频问题词 / 口头禅 <i class="fa-solid fa-circle-info"></i></h2>
+                    <p class="habits-subtitle">高频出现的口头禅会导致表达显得迟疑或不连贯，建议适当优化表达习惯。</p>
+                    
+                    <div class="filler-words-cloud" id="rep-fillers-container">
+                        <span class="filler-tag filler-red">然后 <strong id="cnt-filler-1">5次</strong></span>
+                        <span class="filler-tag filler-pink">我觉得 <strong id="cnt-filler-2">3次</strong></span>
+                        <span class="filler-tag filler-red">其实 <strong id="cnt-filler-3">2次</strong></span>
+                        <span class="filler-tag filler-pink">就是说 <strong id="cnt-filler-4">1次</strong></span>
+                        <span class="filler-tag filler-red">嗯 <strong id="cnt-filler-5">4次</strong></span>
+                    </div>
+                    
+                    <div class="filler-total-desc"><i class="fa-solid fa-triangle-exclamation text-danger-color"></i> 共出现 <strong id="lbl-rep-filler-total">15</strong> 次口头禅，建议适当放慢语速，用短暂的停顿代替口头辅音。</div>
+                </div>
+
+                <!-- Structured advice -->
+                <div class="glass-card habits-card">
+                    <h2>优化建议 <i class="fa-solid fa-circle-info"></i></h2>
+                    <div class="optimization-list-bullets">
+                        <div class="opt-bullet-item">
+                            <i class="fa-solid fa-square-rss text-accent-color"></i>
+                            <span><strong>多用数据与案例增强说服力：</strong> 面试作答中适当引用具体调研数据或成功项目案例，比单一的表态性陈词更能打动考官。</span>
+                        </div>
+                        <div class="opt-bullet-item">
+                            <i class="fa-solid fa-square-rss text-accent-color"></i>
+                            <span><strong>结尾总结提升观点的落点：</strong> 回答结束前应有 1-2 句的提炼升华，总结如何将政策落实到实际岗位工作中，不要突兀收尾。</span>
+                        </div>
+                        <div class="opt-bullet-item">
+                            <i class="fa-solid fa-square-rss text-accent-color"></i>
+                            <span><strong>多用“第一、第二”等结构词：</strong> 在论证过程中加入分段序号词，有助于考官在短时间内抓取您的核心逻辑要点。</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. HISTORY RECORD VIEW (练习记录 - 新增) -->
+        <div id="view-history" class="tab-view">
+            <div class="glass-card history-card-container">
+                <h2><i class="fa-solid fa-clock-rotate-left text-accent-color"></i> 我的模拟练习记录</h2>
+                <p class="history-subtitle">记录您在平台进行的所有模拟测试。您可以随时重新查看AI报告，回顾作答文本和官方推荐范文。</p>
+                
+                <div class="history-table-container">
+                    <table class="history-table" id="history-logs-table">
+                        <thead>
+                            <tr>
+                                <th>序号</th>
+                                <th>模拟时间</th>
+                                <th>关联岗位</th>
+                                <th>测试类型</th>
+                                <th>综合得分</th>
+                                <th>匹配等级</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-table-body">
+                            <!-- Logs generated dynamically -->
+                        </tbody>
+                    </table>
+                    
+                    <!-- Empty state -->
+                    <div class="history-empty-state" id="history-empty-placeholder">
+                        <i class="fa-regular fa-folder-open empty-icon"></i>
+                        <h3>暂无模拟练习记录</h3>
+                        <p>您还没有在平台进行过模拟面试。请先到“岗位设置”中配置您的信息，开启您的首场模拟！</p>
+                        <button class="btn btn-primary" id="btn-history-start-first"><i class="fa-solid fa-circle-play"></i> 开启第一场模拟</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- UI Loading evaluation overlay -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="spinner"></div>
+        <div class="loading-text">AI 考官正在对您的作答进行打分评估</div>
+        <div id="loading-details" class="loading-subtext">正在解析表达条理、政策高度与可操作性...</div>
+    </div>
+
+    <!-- Toast notification system -->
+    <div id="toast-container" style="position: fixed; bottom: 24px; right: 24px; z-index: 1000; display: flex; flex-direction: column; gap: 10px;"></div>
+
+    <!-- UI Bootstrap logic -->
+    <script src="app.js?v=1.2"></script>
+</body>
+</html>

@@ -1,0 +1,195 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String           @id @default(uuid())
+  username        String
+  email           String           @unique
+  passwordHash    String?          @map("password_hash")
+  jobProfile      JobProfile?
+  customQuestions CustomQuestion[]
+  interviews      Interview[]
+  audioFiles      AudioFile[]
+  memberships     Membership[]
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+model JobProfile {
+  id           String   @id @default(uuid())
+  userId       String   @unique @map("user_id")
+  user         User     @relation(fields: [userId], references: [id])
+  jobTitle     String   @map("job_title")
+  unitName     String   @map("unit_name")
+  requirements String
+  extraInfo    String?  @map("extra_info")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("job_profiles")
+}
+
+model Question {
+  id              String            @id @default(uuid())
+  title           String
+  content         String
+  type            String
+  source          String
+  region          String?
+  unitName        String?           @map("unit_name")
+  examDate        DateTime?         @map("exam_date")
+  rules           String?
+  setItems        QuestionSetItem[]
+  interviewAnswer InterviewAnswer[]
+  createdAt       DateTime          @default(now()) @map("created_at")
+
+  @@index([type])
+  @@index([region])
+  @@index([examDate])
+  @@map("questions")
+}
+
+model QuestionSet {
+  id        String            @id @default(uuid())
+  title     String
+  source    String
+  region    String?
+  unitName  String?           @map("unit_name")
+  examDate  DateTime?         @map("exam_date")
+  rules     String?
+  items     QuestionSetItem[]
+  createdAt DateTime          @default(now()) @map("created_at")
+
+  @@map("question_sets")
+}
+
+model QuestionSetItem {
+  id            String      @id @default(uuid())
+  questionSetId String      @map("question_set_id")
+  questionId    String      @map("question_id")
+  questionSet   QuestionSet @relation(fields: [questionSetId], references: [id])
+  question      Question    @relation(fields: [questionId], references: [id])
+  sortOrder     Int         @map("sort_order")
+
+  @@index([questionSetId, sortOrder])
+  @@map("question_set_items")
+}
+
+model CustomQuestion {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id])
+  content   String
+  type      String?
+  source    String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@map("custom_questions")
+}
+
+model Interview {
+  id             String            @id @default(uuid())
+  userId         String            @map("user_id")
+  user           User              @relation(fields: [userId], references: [id])
+  mode           String
+  sourceType     String            @map("source_type")
+  totalSeconds   Int               @map("total_seconds")
+  status         String
+  startedAt      DateTime?         @map("started_at")
+  endedAt        DateTime?         @map("ended_at")
+  answers        InterviewAnswer[]
+  audioFiles     AudioFile[]
+  report         AiReport?
+  createdAt      DateTime          @default(now()) @map("created_at")
+
+  @@index([userId, createdAt])
+  @@map("interviews")
+}
+
+model InterviewAnswer {
+  id                      String      @id @default(uuid())
+  interviewId             String      @map("interview_id")
+  interview               Interview   @relation(fields: [interviewId], references: [id])
+  questionId              String?     @map("question_id")
+  question                Question?   @relation(fields: [questionId], references: [id])
+  questionContentSnapshot String      @map("question_content_snapshot")
+  transcript              String?
+  durationSeconds         Int?        @map("duration_seconds")
+  sortOrder               Int         @map("sort_order")
+  audioFile               AudioFile?
+  aiReview                AiReview?
+  createdAt               DateTime    @default(now()) @map("created_at")
+
+  @@index([interviewId, sortOrder])
+  @@map("interview_answers")
+}
+
+model AudioFile {
+  id              String          @id @default(uuid())
+  userId          String          @map("user_id")
+  user            User            @relation(fields: [userId], references: [id])
+  interviewId     String          @map("interview_id")
+  interview       Interview       @relation(fields: [interviewId], references: [id])
+  answerId        String          @unique @map("answer_id")
+  answer          InterviewAnswer @relation(fields: [answerId], references: [id])
+  fileUrl         String          @map("file_url")
+  mimeType        String          @map("mime_type")
+  sizeBytes       BigInt?         @map("size_bytes")
+  durationSeconds Int?            @map("duration_seconds")
+  createdAt       DateTime        @default(now()) @map("created_at")
+
+  @@index([answerId])
+  @@map("audio_files")
+}
+
+model AiReview {
+  id                String          @id @default(uuid())
+  interviewAnswerId String          @unique @map("interview_answer_id")
+  interviewAnswer   InterviewAnswer @relation(fields: [interviewAnswerId], references: [id])
+  score             Int?
+  comment           String
+  thinking          String
+  strengths         Json?
+  weaknesses        Json?
+  suggestions       Json?
+  createdAt         DateTime        @default(now()) @map("created_at")
+
+  @@index([interviewAnswerId])
+  @@map("ai_reviews")
+}
+
+model AiReport {
+  id             String    @id @default(uuid())
+  interviewId    String    @unique @map("interview_id")
+  interview      Interview @relation(fields: [interviewId], references: [id])
+  totalScore     Int?      @map("total_score")
+  matchScore     Int?      @map("match_score")
+  stabilityScore Int?      @map("stability_score")
+  summary        String
+  details        Json?
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  @@index([interviewId])
+  @@map("ai_reports")
+}
+
+model Membership {
+  id        String    @id @default(uuid())
+  userId    String    @map("user_id")
+  user      User      @relation(fields: [userId], references: [id])
+  plan      String
+  startedAt DateTime? @map("started_at")
+  expiredAt DateTime? @map("expired_at")
+  status    String
+
+  @@map("memberships")
+}

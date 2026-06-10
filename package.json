@@ -1,0 +1,23 @@
+{
+  "name": "humian-chongya",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@9.15.4",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w @humian/web",
+    "dev:web": "npm run dev -w @humian/web",
+    "build": "npm run build -w @humian/shared && npm run build -w @humian/web",
+    "build:web": "npm run build -w @humian/web",
+    "typecheck": "npm run typecheck -w @humian/web",
+    "docs:implementation": "py scripts/generate_implementation_plan_doc.py",
+    "docs:architecture": "py scripts/generate_architecture_doc.py",
+    "docs:prd": "py scripts/generate_enhanced_prd.py"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3"
+  }
+}
