@@ -3,6 +3,14 @@ import { DEFAULT_ANSWER_SECONDS } from "@humian/shared";
 import { create } from "zustand";
 import { reviewAnswers, createMockReport } from "../services/mockAiService";
 
+type AnswerDraft = {
+  transcript?: string;
+  durationSeconds?: number;
+  audioBlobId?: string;
+  audioMimeType?: string;
+  audioSizeBytes?: number;
+};
+
 interface InterviewState {
   current?: Interview;
   isQuestionVisible: boolean;
@@ -16,19 +24,23 @@ interface InterviewState {
   tick: () => void;
   setStatus: (status: Interview["status"]) => void;
   toggleQuestionVisible: () => void;
-  saveCurrentAnswer: (transcript?: string) => void;
+  saveCurrentAnswer: (answer?: AnswerDraft) => void;
   nextQuestion: () => void;
   finishInterview: () => Interview | undefined;
   resetInterview: () => void;
 }
 
-function createAnswer(question: Question, index: number, transcript = ""): InterviewAnswer {
+function createAnswer(question: Question, index: number, answer: AnswerDraft = {}): InterviewAnswer {
   return {
     id: `answer-${Date.now()}-${index}`,
     questionId: question.id,
     questionTitle: question.title,
     questionContentSnapshot: question.content,
-    transcript,
+    transcript: answer.transcript ?? "",
+    durationSeconds: answer.durationSeconds,
+    audioBlobId: answer.audioBlobId,
+    audioMimeType: answer.audioMimeType,
+    audioSizeBytes: answer.audioSizeBytes,
     sortOrder: index + 1
   };
 }
@@ -54,20 +66,19 @@ export const useInterviewStore = create<InterviewState>((set, get) => ({
   },
   tick: () =>
     set((state) => {
-      if (!state.current || state.current.status === "finished") return state;
+      if (!state.current || state.current.status === "finished" || state.current.status === "paused") return state;
       const remainingSeconds = Math.max(0, state.current.remainingSeconds - 1);
       return {
         current: {
           ...state.current,
-          remainingSeconds,
-          status: remainingSeconds === 0 ? "finished" : state.current.status
+          remainingSeconds
         }
       };
     }),
   setStatus: (status) =>
     set((state) => (state.current ? { current: { ...state.current, status } } : state)),
   toggleQuestionVisible: () => set((state) => ({ isQuestionVisible: !state.isQuestionVisible })),
-  saveCurrentAnswer: (transcript = "") =>
+  saveCurrentAnswer: (answer = {}) =>
     set((state) => {
       if (!state.current) return state;
       const index = state.current.answers.length;
@@ -76,7 +87,7 @@ export const useInterviewStore = create<InterviewState>((set, get) => ({
       return {
         current: {
           ...state.current,
-          answers: [...state.current.answers, createAnswer(question, index, transcript)]
+          answers: [...state.current.answers, createAnswer(question, index, answer)]
         }
       };
     }),

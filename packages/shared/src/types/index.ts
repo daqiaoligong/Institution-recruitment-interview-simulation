@@ -48,6 +48,8 @@ export interface InterviewAnswer {
   durationSeconds?: number;
   audioBlobId?: string;
   audioUrl?: string;
+  audioMimeType?: string;
+  audioSizeBytes?: number;
   sortOrder: number;
   aiReview?: AiReview;
 }

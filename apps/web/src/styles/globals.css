@@ -490,6 +490,10 @@ label {
   font-size: 28px;
 }
 
+.record-dot.active {
+  box-shadow: 0 0 0 8px rgba(255, 113, 24, 0.12);
+}
+
 .next-control {
   height: 48px;
   padding: 0 34px;
@@ -509,26 +513,38 @@ label {
   font-size: 12px;
 }
 
-.hidden-draft-input,
-.read-draft-input {
-  position: absolute;
-  z-index: 4;
-  right: 32px;
-  bottom: 34px;
-  width: 280px;
-  min-height: 74px;
-  opacity: 0.24;
-}
-
-.read-draft-input {
-  color: var(--ink);
-  opacity: 0.68;
-}
-
 .review-page {
   display: grid;
   grid-template-columns: 1fr 460px;
   gap: 30px;
+}
+
+.mic-blocking-panel {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 6;
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  width: min(420px, calc(100vw - 48px));
+  padding: 30px;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.94);
+  color: var(--ink);
+  text-align: center;
+  box-shadow: var(--shadow);
+  transform: translate(-50%, -50%);
+}
+
+.mic-blocking-panel h2,
+.mic-blocking-panel p {
+  margin: 0;
+}
+
+.mic-blocking-panel p {
+  color: var(--muted);
 }
 
 .review-answer-list {
@@ -542,6 +558,53 @@ label {
   border-radius: 999px;
   background: white;
   color: var(--muted);
+}
+
+.review-answer-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.review-answer-heading h3 {
+  margin: 0;
+}
+
+.review-answer-heading span {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.audio-player-block {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 14px 0;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: white;
+  color: var(--muted);
+}
+
+.audio-player-block audio {
+  width: min(420px, 100%);
+  height: 36px;
+}
+
+.audio-player-block em {
+  color: var(--muted);
+  font-style: normal;
+  font-size: 13px;
+}
+
+.transcript-editor {
+  margin-top: 12px;
+}
+
+.transcript-editor textarea {
+  min-height: 110px;
 }
 
 .transcript {

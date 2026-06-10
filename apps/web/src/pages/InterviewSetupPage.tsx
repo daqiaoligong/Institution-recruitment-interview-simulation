@@ -1,7 +1,8 @@
+import type { InterviewMode } from "@humian/shared";
 import { Play } from "lucide-react";
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import type { InterviewMode } from "@humian/shared";
+import { ensureMicrophonePermission } from "../services/recorderService";
 import { useAuthStore } from "../stores/authStore";
 import { useInterviewStore } from "../stores/interviewStore";
 import { useQuestionStore } from "../stores/questionStore";
@@ -18,6 +19,7 @@ export function InterviewSetupPage() {
     searchParams.get("source") === "free" ? "free" : "set"
   );
   const [error, setError] = useState("");
+  const [isCheckingMic, setIsCheckingMic] = useState(false);
 
   function changeSource(nextSource: "set" | "free") {
     setError("");
@@ -28,9 +30,10 @@ export function InterviewSetupPage() {
     setSource(nextSource);
   }
 
-  function start() {
+  async function start() {
     const selectedSet = questionSets.find((item) => item.id === selectedSetId);
     const questions = source === "free" ? freeMockQuestions : selectedSet?.questions ?? [];
+
     if (!questions.length) {
       if (source === "free") {
         navigate("/question-bank?returnTo=setup");
@@ -39,6 +42,18 @@ export function InterviewSetupPage() {
       setError("请选择面试套题");
       return;
     }
+
+    setIsCheckingMic(true);
+    setError("");
+
+    try {
+      await ensureMicrophonePermission();
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "无法读取麦克风权限，暂时不能开始面试。");
+      setIsCheckingMic(false);
+      return;
+    }
+
     const session = startInterview({
       userId: user.id,
       mode,
@@ -46,6 +61,7 @@ export function InterviewSetupPage() {
       secondsPerQuestion: seconds,
       sourceType: source === "free" ? "free_mock" : "question_set"
     });
+    setIsCheckingMic(false);
     navigate(`/interview/session/${session.id}`);
   }
 
@@ -97,9 +113,9 @@ export function InterviewSetupPage() {
           </select>
         </label>
         {error && <div className="form-error">{error}</div>}
-        <button className="primary-button" onClick={start}>
+        <button className="primary-button" onClick={start} disabled={isCheckingMic}>
           <Play size={18} />
-          开始面试
+          {isCheckingMic ? "检查麦克风中" : "开始面试"}
         </button>
       </div>
     </section>

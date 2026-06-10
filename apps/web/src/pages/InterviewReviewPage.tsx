@@ -1,9 +1,89 @@
+import type { InterviewAnswer } from "@humian/shared";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { getAudioBlob } from "../services/indexedDbService";
 import { useHistoryStore } from "../stores/historyStore";
+
+function ReviewAnswerCard({
+  answer,
+  sessionId,
+  onTranscriptChange
+}: {
+  answer: InterviewAnswer;
+  sessionId: string;
+  onTranscriptChange: (sessionId: string, answerId: string, transcript: string) => void;
+}) {
+  const [audioUrl, setAudioUrl] = useState<string>();
+  const [audioMessage, setAudioMessage] = useState(answer.audioBlobId ? "正在读取录音" : "本题暂无录音");
+  const [transcript, setTranscript] = useState(answer.transcript);
+
+  useEffect(() => {
+    setTranscript(answer.transcript);
+  }, [answer.transcript]);
+
+  useEffect(() => {
+    let objectUrl: string | undefined;
+    let cancelled = false;
+
+    async function loadAudio() {
+      if (!answer.audioBlobId) {
+        setAudioUrl(undefined);
+        setAudioMessage("本题暂无录音");
+        return;
+      }
+
+      const blob = await getAudioBlob(answer.audioBlobId);
+      if (cancelled) return;
+
+      if (!blob) {
+        setAudioUrl(undefined);
+        setAudioMessage("未找到本地录音文件");
+        return;
+      }
+
+      objectUrl = URL.createObjectURL(blob);
+      setAudioUrl(objectUrl);
+      setAudioMessage("录音已加载");
+    }
+
+    void loadAudio();
+
+    return () => {
+      cancelled = true;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [answer.audioBlobId]);
+
+  return (
+    <article className="review-answer-card">
+      <div className="review-answer-heading">
+        <h3>第 {answer.sortOrder} 题</h3>
+        <span>{answer.durationSeconds ? `${answer.durationSeconds} 秒` : "未记录时长"}</span>
+      </div>
+      <p>{answer.questionContentSnapshot}</p>
+
+      <div className="audio-player-block">
+        {audioUrl ? <audio controls src={audioUrl} /> : <span>{audioMessage}</span>}
+        {answer.audioSizeBytes ? <em>{Math.round(answer.audioSizeBytes / 1024)} KB</em> : null}
+      </div>
+
+      <label className="transcript-editor">
+        转写文本
+        <textarea
+          value={transcript}
+          onChange={(event) => setTranscript(event.target.value)}
+          onBlur={() => onTranscriptChange(sessionId, answer.id, transcript)}
+          placeholder="未识别到有效作答，可在这里手动补充"
+        />
+      </label>
+    </article>
+  );
+}
 
 export function InterviewReviewPage() {
   const { id } = useParams();
   const session = useHistoryStore((state) => state.getSession(id ?? ""));
+  const updateAnswerTranscript = useHistoryStore((state) => state.updateAnswerTranscript);
   const selected = session?.answers[0];
 
   if (!session) {
@@ -19,15 +99,15 @@ export function InterviewReviewPage() {
     <section className="review-page">
       <div>
         <h1>面试结束复盘</h1>
-        <p className="muted">逐题查看题目、转写文本、AI 评语与答题思路</p>
+        <p className="muted">逐题查看题目、录音、转写文本、AI 评语与答题思路</p>
         <div className="review-answer-list">
           {session.answers.map((answer) => (
-            <article className="review-answer-card" key={answer.id}>
-              <h3>第 {answer.sortOrder} 题</h3>
-              <p>{answer.questionContentSnapshot}</p>
-              <div className="audio-placeholder">录音占位 · Phase 3 接入真实播放</div>
-              <p className="transcript">转写：{answer.transcript || "未识别到有效作答"}</p>
-            </article>
+            <ReviewAnswerCard
+              answer={answer}
+              key={answer.id}
+              sessionId={session.id}
+              onTranscriptChange={updateAnswerTranscript}
+            />
           ))}
         </div>
       </div>
