@@ -13,6 +13,10 @@ body {
   background-size: auto, 32px 32px, 32px 32px, auto;
 }
 
+body.home-scroll-lock {
+  overflow: hidden;
+}
+
 a {
   color: inherit;
   text-decoration: none;
@@ -52,6 +56,15 @@ label {
 .app-main {
   min-height: calc(100vh - 128px);
   padding: 38px 44px 64px;
+}
+
+body.home-scroll-lock .app-main {
+  display: grid;
+  align-items: start;
+  height: calc(100vh - 98px);
+  min-height: 0;
+  overflow: hidden;
+  padding: 56px 44px 0;
 }
 
 .top-nav {
@@ -155,6 +168,15 @@ label {
   width: 320px;
   max-width: 34vw;
   margin: 28px 0 42px;
+}
+
+.home-page {
+  align-content: center;
+  gap: 16px;
+}
+
+.home-page .hero-logo {
+  margin: -6px 0 24px;
 }
 
 .primary-button,
