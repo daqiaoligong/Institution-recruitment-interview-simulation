@@ -10,8 +10,10 @@
   "scripts": {
     "dev": "npm run dev -w @humian/web",
     "dev:web": "npm run dev -w @humian/web",
+    "dev:api": "npm run dev -w @humian/api",
     "build": "npm run build -w @humian/shared && npm run build -w @humian/web",
     "build:web": "npm run build -w @humian/web",
+    "build:api": "npm run build -w @humian/api",
     "typecheck": "npm run typecheck -w @humian/web",
     "docs:implementation": "py scripts/generate_implementation_plan_doc.py",
     "docs:architecture": "py scripts/generate_architecture_doc.py",

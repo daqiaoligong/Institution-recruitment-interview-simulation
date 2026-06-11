@@ -1,29 +1,36 @@
-import { Body, Controller, Get, Param, Post } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, UseGuards } from "@nestjs/common";
+import { AuthGuard } from "../common/auth/auth.guard";
+import { CurrentUser, RequestUser } from "../common/auth/current-user.decorator";
+import { CreateInterviewDto, SaveAnswerDto } from "./dto";
+import { InterviewsService } from "./interviews.service";
 
 @Controller("interviews")
+@UseGuards(AuthGuard)
 export class InterviewsController {
+  constructor(private readonly interviewsService: InterviewsService) {}
+
   @Post()
-  create(@Body() body: unknown) {
-    return body;
+  create(@CurrentUser() user: RequestUser, @Body() body: CreateInterviewDto) {
+    return this.interviewsService.create(user.id, body);
   }
 
   @Get()
-  list() {
-    return [];
+  list(@CurrentUser() user: RequestUser) {
+    return this.interviewsService.list(user.id);
   }
 
   @Get(":id")
-  get(@Param("id") id: string) {
-    return { id };
+  get(@CurrentUser() user: RequestUser, @Param("id") id: string) {
+    return this.interviewsService.get(user.id, id);
   }
 
   @Post(":id/answers")
-  answer(@Param("id") id: string, @Body() body: unknown) {
-    return { interviewId: id, ...(body as object) };
+  answer(@CurrentUser() user: RequestUser, @Param("id") id: string, @Body() body: SaveAnswerDto) {
+    return this.interviewsService.saveAnswer(user.id, id, body);
   }
 
   @Post(":id/finish")
-  finish(@Param("id") id: string) {
-    return { id, status: "finished" };
+  finish(@CurrentUser() user: RequestUser, @Param("id") id: string) {
+    return this.interviewsService.finish(user.id, id);
   }
 }

@@ -2,8 +2,9 @@ import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../stores/authStore";
 
 export function TopNav() {
-  const { currentUser, logout } = useAuthStore();
+  const { currentUser, token, logout } = useAuthStore();
   const navigate = useNavigate();
+  const isAuthed = Boolean(currentUser && token);
 
   return (
     <header className="top-nav">
@@ -18,12 +19,12 @@ export function TopNav() {
       </nav>
       <button
         className="avatar-button"
-        onClick={() => (currentUser ? navigate("/profile") : navigate("/login"))}
-        title={currentUser?.username ?? "登录"}
+        onClick={() => (isAuthed ? navigate("/profile") : navigate("/login"))}
+        title={isAuthed ? currentUser?.username : "登录"}
       >
-        {currentUser ? currentUser.username.slice(0, 1) : "我"}
+        {isAuthed ? currentUser?.username.slice(0, 1) : "我"}
       </button>
-      {currentUser && (
+      {isAuthed && (
         <button className="link-button" onClick={logout}>
           退出
         </button>

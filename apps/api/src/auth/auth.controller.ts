@@ -1,24 +1,26 @@
-import { Body, Controller, Get, Post } from "@nestjs/common";
-
-interface AuthDto {
-  username: string;
-  email: string;
-}
+import { Body, Controller, Get, Post, UseGuards } from "@nestjs/common";
+import { CurrentUser, RequestUser } from "../common/auth/current-user.decorator";
+import { AuthGuard } from "../common/auth/auth.guard";
+import { AuthService } from "./auth.service";
+import { AuthDto } from "./dto";
 
 @Controller("auth")
 export class AuthController {
+  constructor(private readonly authService: AuthService) {}
+
   @Post("register")
   register(@Body() body: AuthDto) {
-    return { id: `user-${body.email}`, username: body.username, email: body.email, token: "dev-token" };
+    return this.authService.register(body);
   }
 
   @Post("login")
   login(@Body() body: AuthDto) {
-    return { id: `user-${body.email}`, username: body.username, email: body.email, token: "dev-token" };
+    return this.authService.login(body);
   }
 
   @Get("me")
-  me() {
-    return { id: "dev-user", username: "考生1234", email: "candidate@example.com" };
+  @UseGuards(AuthGuard)
+  me(@CurrentUser() user: RequestUser) {
+    return this.authService.me(user.id);
   }
 }

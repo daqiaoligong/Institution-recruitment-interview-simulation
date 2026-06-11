@@ -12,8 +12,8 @@ import { QuestionBankPage } from "../pages/QuestionBankPage";
 import { useAuthStore } from "../stores/authStore";
 
 function RequireAuth({ children }: { children: ReactNode }) {
-  const user = useAuthStore.getState().currentUser;
-  return user ? children : <Navigate to="/login" replace />;
+  const { currentUser, token } = useAuthStore.getState();
+  return currentUser && token ? children : <Navigate to="/login" replace />;
 }
 
 export const router = createBrowserRouter([

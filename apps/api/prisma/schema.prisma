@@ -129,6 +129,7 @@ model InterviewAnswer {
   aiReview                AiReview?
   createdAt               DateTime    @default(now()) @map("created_at")
 
+  @@unique([interviewId, sortOrder])
   @@index([interviewId, sortOrder])
   @@map("interview_answers")
 }

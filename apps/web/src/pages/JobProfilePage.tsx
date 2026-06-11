@@ -1,12 +1,12 @@
 import { Sparkles } from "lucide-react";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { useAuthStore } from "../stores/authStore";
 import { useJobProfileStore } from "../stores/jobProfileStore";
 import { useQuestionStore } from "../stores/questionStore";
 
 export function JobProfilePage() {
   const user = useAuthStore((state) => state.currentUser)!;
-  const { profile, saveProfile } = useJobProfileStore();
+  const { profile, loadProfile, saveProfile } = useJobProfileStore();
   const addCustomQuestion = useQuestionStore((state) => state.addCustomQuestion);
   const [jobTitle, setJobTitle] = useState(profile?.jobTitle ?? "");
   const [unitName, setUnitName] = useState(profile?.unitName ?? "");
@@ -15,10 +15,22 @@ export function JobProfilePage() {
   const [generated, setGenerated] = useState<string[]>([]);
   const [message, setMessage] = useState("");
 
-  function submit(event: FormEvent) {
+  useEffect(() => {
+    void loadProfile();
+  }, [loadProfile]);
+
+  useEffect(() => {
+    if (!profile) return;
+    setJobTitle(profile.jobTitle);
+    setUnitName(profile.unitName);
+    setRequirements(profile.requirements);
+    setExtraInfo(profile.extraInfo);
+  }, [profile]);
+
+  async function submit(event: FormEvent) {
     event.preventDefault();
-    saveProfile({ userId: user.id, jobTitle, unitName, requirements, extraInfo });
-    setMessage("岗位信息已保存");
+    const result = await saveProfile({ userId: user.id, jobTitle, unitName, requirements, extraInfo });
+    setMessage(result.ok ? "岗位信息已保存" : result.message ?? "岗位信息已本地保存");
   }
 
   function generateQuestions() {
@@ -67,12 +79,15 @@ export function JobProfilePage() {
         <h2>AI 生题展示区</h2>
         <div className="generated-list">
           {generated.map((item, index) => (
-            <div className="generated-item" key={item}>
-              <textarea value={item} onChange={(event) => {
-                const next = [...generated];
-                next[index] = event.target.value;
-                setGenerated(next);
-              }} />
+            <div className="generated-item" key={`${item}-${index}`}>
+              <textarea
+                value={item}
+                onChange={(event) => {
+                  const next = [...generated];
+                  next[index] = event.target.value;
+                  setGenerated(next);
+                }}
+              />
               <button className="secondary-button" onClick={() => addCustomQuestion(item)}>
                 加入题库
               </button>

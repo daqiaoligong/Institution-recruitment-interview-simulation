@@ -1,32 +1,38 @@
 import { Plus, Trash2 } from "lucide-react";
+import { useEffect } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { questionTree } from "../data/questionTree";
 import { useQuestionStore } from "../stores/questionStore";
 
 export function QuestionBankPage() {
   const [searchParams] = useSearchParams();
   const {
     questionSets,
+    questionTree,
     selectedSetId,
     selectSet,
     addToFreeMock,
     freeMockQuestions,
     removeFromFreeMock,
-    updateFreeMockQuestion
+    updateFreeMockQuestion,
+    loadQuestionSets
   } = useQuestionStore();
   const selectedSet = questionSets.find((set) => set.id === selectedSetId) ?? questionSets[0];
   const isReturningToSetup = searchParams.get("returnTo") === "setup";
+
+  useEffect(() => {
+    void loadQuestionSets();
+  }, [loadQuestionSets]);
 
   return (
     <section className="three-column-page">
       <aside className="panel side-panel">
         <h2>题库分类</h2>
         <div className="tree-list">
-          {questionTree.map((node) => (
+          {(questionTree.length ? questionTree : [{ id: "local", label: "本地题库", children: questionSets.map((set) => ({ id: set.id, label: set.title })) }]).map((node) => (
             <div key={node.id}>
               <strong>{node.label}</strong>
               {node.children?.map((child) => (
-                <button key={child.id} className="tree-item">
+                <button key={child.id} className="tree-item" onClick={() => selectSet(child.id)}>
                   {child.label}
                 </button>
               ))}

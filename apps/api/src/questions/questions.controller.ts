@@ -1,34 +1,43 @@
-import { Body, Controller, Delete, Get, Param, Post, Put } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards } from "@nestjs/common";
+import { AuthGuard } from "../common/auth/auth.guard";
+import { CurrentUser, RequestUser } from "../common/auth/current-user.decorator";
+import { CreateCustomQuestionDto, UpdateCustomQuestionDto } from "./dto";
+import { QuestionsService } from "./questions.service";
 
 @Controller()
 export class QuestionsController {
+  constructor(private readonly questionsService: QuestionsService) {}
+
   @Get("questions/tree")
   tree() {
-    return [];
+    return this.questionsService.tree();
   }
 
   @Get("questions")
-  list() {
-    return [];
+  list(@Query("type") type?: string, @Query("region") region?: string, @Query("keyword") keyword?: string) {
+    return this.questionsService.list({ type, region, keyword });
   }
 
   @Get("question-sets/:id")
   set(@Param("id") id: string) {
-    return { id, questions: [] };
+    return this.questionsService.questionSet(id);
   }
 
   @Post("questions/custom")
-  createCustom(@Body() body: unknown) {
-    return body;
+  @UseGuards(AuthGuard)
+  createCustom(@CurrentUser() user: RequestUser, @Body() body: CreateCustomQuestionDto) {
+    return this.questionsService.createCustom(user.id, body);
   }
 
   @Put("questions/custom/:id")
-  updateCustom(@Param("id") id: string, @Body() body: unknown) {
-    return { id, ...(body as object) };
+  @UseGuards(AuthGuard)
+  updateCustom(@CurrentUser() user: RequestUser, @Param("id") id: string, @Body() body: UpdateCustomQuestionDto) {
+    return this.questionsService.updateCustom(user.id, id, body);
   }
 
   @Delete("questions/custom/:id")
-  deleteCustom(@Param("id") id: string) {
-    return { id, deleted: true };
+  @UseGuards(AuthGuard)
+  deleteCustom(@CurrentUser() user: RequestUser, @Param("id") id: string) {
+    return this.questionsService.deleteCustom(user.id, id);
   }
 }
