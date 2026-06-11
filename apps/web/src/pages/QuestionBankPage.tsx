@@ -1,5 +1,5 @@
 import { Plus, Trash2 } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useQuestionStore } from "../stores/questionStore";
 
@@ -16,16 +16,65 @@ export function QuestionBankPage() {
     updateFreeMockQuestion,
     loadQuestionSets,
     loadCustomQuestions,
-    customQuestions
+    customQuestions,
+    addCustomQuestion,
+    deleteCustomQuestion
   } = useQuestionStore();
   const selectedSet = questionSets.find((set) => set.id === selectedSetId) ?? questionSets[0];
   const isCustomSelected = selectedSetId === "custom";
   const isReturningToSetup = searchParams.get("returnTo") === "setup";
+  const targetSetId = searchParams.get("set");
+  const [isAddingCustom, setIsAddingCustom] = useState(false);
+  const [newCustomContent, setNewCustomContent] = useState("");
+  const [customMessage, setCustomMessage] = useState("");
+  const [busyCustomId, setBusyCustomId] = useState<string>();
 
   useEffect(() => {
     void loadQuestionSets();
     void loadCustomQuestions();
   }, [loadCustomQuestions, loadQuestionSets]);
+
+  useEffect(() => {
+    if (targetSetId) {
+      selectSet(targetSetId);
+    }
+  }, [selectSet, targetSetId]);
+
+  async function handleCreateCustomQuestion() {
+    const content = newCustomContent.trim();
+    if (!content) {
+      setCustomMessage("请先输入题目内容");
+      return;
+    }
+
+    setBusyCustomId("new");
+    setCustomMessage("");
+    try {
+      const result = await addCustomQuestion(content);
+      if (!result.ok) {
+        setCustomMessage(result.message ?? "新增题目失败");
+        return;
+      }
+      setNewCustomContent("");
+      setIsAddingCustom(false);
+      setCustomMessage("题目已加入我的专属题型");
+    } finally {
+      setBusyCustomId(undefined);
+    }
+  }
+
+  async function handleDeleteCustomQuestion(id: string) {
+    if (!window.confirm("确认删除这道专属题吗？")) return;
+
+    setBusyCustomId(id);
+    setCustomMessage("");
+    try {
+      const result = await deleteCustomQuestion(id);
+      setCustomMessage(result.ok ? "题目已删除" : result.message ?? "删除题目失败");
+    } finally {
+      setBusyCustomId(undefined);
+    }
+  }
 
   return (
     <section className="three-column-page">
@@ -53,24 +102,74 @@ export function QuestionBankPage() {
       <section className="panel main-panel">
         <div className="panel-header">
           <h1>{isCustomSelected ? "我的专属题型" : selectedSet.title}</h1>
-          <select value={selectedSetId} onChange={(event) => selectSet(event.target.value)}>
-            {questionSets.map((set) => (
-              <option key={set.id} value={set.id}>
-                {set.title}
-              </option>
-            ))}
-            <option value="custom">我的专属题型</option>
-          </select>
+          <div className="panel-actions">
+            {isCustomSelected && (
+              <button className="secondary-button" type="button" onClick={() => setIsAddingCustom(true)}>
+                <Plus size={16} />
+                新增题目
+              </button>
+            )}
+            <select value={selectedSetId} onChange={(event) => selectSet(event.target.value)}>
+              {questionSets.map((set) => (
+                <option key={set.id} value={set.id}>
+                  {set.title}
+                </option>
+              ))}
+              <option value="custom">我的专属题型</option>
+            </select>
+          </div>
         </div>
+        {isCustomSelected && customMessage && <div className="success-message">{customMessage}</div>}
         <div className="question-list">
+          {isCustomSelected && isAddingCustom && (
+            <article className="custom-editor-card">
+              <textarea
+                value={newCustomContent}
+                onChange={(event) => setNewCustomContent(event.target.value)}
+                placeholder="输入一道新的专属题目"
+              />
+              <div className="custom-editor-actions">
+                <button
+                  className="primary-button"
+                  type="button"
+                  onClick={handleCreateCustomQuestion}
+                  disabled={busyCustomId === "new"}
+                >
+                  {busyCustomId === "new" ? "保存中" : "保存题目"}
+                </button>
+                <button
+                  className="secondary-button"
+                  type="button"
+                  onClick={() => {
+                    setIsAddingCustom(false);
+                    setNewCustomContent("");
+                  }}
+                >
+                  取消
+                </button>
+              </div>
+            </article>
+          )}
           {(isCustomSelected ? customQuestions : selectedSet.questions).map((question, index) => (
             <article className="question-card" key={question.id}>
               <span className="question-number">{index + 1}</span>
               <p>{question.content}</p>
-              <button className="secondary-button" onClick={() => addToFreeMock(question)}>
-                <Plus size={16} />
-                加入模拟
-              </button>
+              <div className="question-actions">
+                <button className="secondary-button" onClick={() => addToFreeMock(question)}>
+                  <Plus size={16} />
+                  加入模拟
+                </button>
+                {isCustomSelected && (
+                  <button
+                    className="icon-button danger"
+                    title="删除题目"
+                    onClick={() => handleDeleteCustomQuestion(question.id)}
+                    disabled={busyCustomId === question.id}
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                )}
+              </div>
             </article>
           ))}
           {isCustomSelected && !customQuestions.length && (

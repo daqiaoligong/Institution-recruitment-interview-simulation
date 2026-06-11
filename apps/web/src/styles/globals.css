@@ -300,6 +300,14 @@ body.home-scroll-lock .app-main {
   justify-content: space-between;
 }
 
+.panel-actions,
+.question-actions,
+.custom-editor-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .tree-list,
 .free-list,
 .generated-list,
@@ -357,6 +365,20 @@ body.home-scroll-lock .app-main {
   height: 34px;
   border: 0;
   border-radius: 50%;
+  background: white;
+}
+
+.icon-button.danger {
+  color: #b42318;
+  background: #fff1f0;
+}
+
+.custom-editor-card {
+  display: grid;
+  gap: 14px;
+  padding: 20px;
+  border: 1px dashed var(--line);
+  border-radius: 18px;
   background: white;
 }
 

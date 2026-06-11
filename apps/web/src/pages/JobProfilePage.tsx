@@ -1,19 +1,31 @@
 import { Sparkles } from "lucide-react";
 import { FormEvent, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { generateJobQuestions } from "../services/aiService";
 import { useAuthStore } from "../stores/authStore";
 import { useJobProfileStore } from "../stores/jobProfileStore";
 import { useQuestionStore } from "../stores/questionStore";
 
 export function JobProfilePage() {
+  const navigate = useNavigate();
   const user = useAuthStore((state) => state.currentUser)!;
   const { profile, loadProfile, saveProfile } = useJobProfileStore();
-  const addCustomQuestion = useQuestionStore((state) => state.addCustomQuestion);
+  const {
+    questionSets,
+    questionTree,
+    customQuestions,
+    generatedJobQuestions,
+    loadQuestionSets,
+    loadCustomQuestions,
+    selectSet,
+    setGeneratedJobQuestions,
+    updateGeneratedJobQuestion,
+    addCustomQuestion
+  } = useQuestionStore();
   const [jobTitle, setJobTitle] = useState(profile?.jobTitle ?? "");
   const [unitName, setUnitName] = useState(profile?.unitName ?? "");
   const [requirements, setRequirements] = useState(profile?.requirements ?? "");
   const [extraInfo, setExtraInfo] = useState(profile?.extraInfo ?? "");
-  const [generated, setGenerated] = useState<string[]>([]);
   const [addedIndexes, setAddedIndexes] = useState<number[]>([]);
   const [addingIndex, setAddingIndex] = useState<number | null>(null);
   const [message, setMessage] = useState("");
@@ -21,7 +33,9 @@ export function JobProfilePage() {
 
   useEffect(() => {
     void loadProfile();
-  }, [loadProfile]);
+    void loadQuestionSets();
+    void loadCustomQuestions();
+  }, [loadCustomQuestions, loadProfile, loadQuestionSets]);
 
   useEffect(() => {
     if (!profile) return;
@@ -43,7 +57,7 @@ export function JobProfilePage() {
 
     try {
       const result = await generateJobQuestions({ userId: user.id, jobTitle, unitName, requirements, extraInfo });
-      setGenerated(result.questions.map((question) => question.content));
+      setGeneratedJobQuestions(result.questions.map((question) => question.content));
       setAddedIndexes([]);
       setMessage("AI 生题已生成，可编辑后加入题库");
     } catch (error) {
@@ -70,14 +84,42 @@ export function JobProfilePage() {
     }
   }
 
+  function openQuestionSet(id: string) {
+    selectSet(id);
+    navigate(`/question-bank?set=${encodeURIComponent(id)}`);
+  }
+
+  function openCustomQuestions() {
+    selectSet("custom");
+    navigate("/question-bank?set=custom");
+  }
+
+  const tree = questionTree.length
+    ? questionTree
+    : [{ id: "local", label: "本地题库", children: questionSets.map((set) => ({ id: set.id, label: set.title })) }];
+
   return (
     <section className="three-column-page">
       <aside className="panel side-panel">
         <h2>题库分类</h2>
-        <button className="tree-item active">上海区属事业单位</button>
-        <button className="tree-item">综合分析</button>
-        <button className="tree-item">岗位匹配题</button>
-        <button className="tree-item">我的专属题型</button>
+        <div className="tree-list">
+          {tree.map((node) => (
+            <div key={node.id}>
+              <strong>{node.label}</strong>
+              {node.children?.map((child) => (
+                <button className="tree-item" key={child.id} onClick={() => openQuestionSet(child.id)}>
+                  {child.label}
+                </button>
+              ))}
+            </div>
+          ))}
+          <div>
+            <strong>我的题库</strong>
+            <button className="tree-item" onClick={openCustomQuestions}>
+              我的专属题型（{customQuestions.length}）
+            </button>
+          </div>
+        </div>
       </aside>
       <form className="panel main-panel job-form" onSubmit={submit}>
         <h1>岗位信息填报</h1>
@@ -105,27 +147,25 @@ export function JobProfilePage() {
       <aside className="panel side-panel">
         <h2>AI 生题展示区</h2>
         <div className="generated-list">
-          {generated.map((item, index) => (
+          {generatedJobQuestions.map((item, index) => {
+            const isAlreadySaved = addedIndexes.includes(index) || customQuestions.some((question) => question.content === item);
+            return (
             <div className="generated-item" key={`${item}-${index}`}>
               <textarea
                 value={item}
-                onChange={(event) => {
-                  const next = [...generated];
-                  next[index] = event.target.value;
-                  setGenerated(next);
-                }}
+                onChange={(event) => updateGeneratedJobQuestion(index, event.target.value)}
               />
               <button
                 className="secondary-button"
                 type="button"
                 onClick={() => handleAddQuestion(item, index)}
-                disabled={addingIndex === index || addedIndexes.includes(index)}
+                disabled={addingIndex === index || isAlreadySaved}
               >
-                {addedIndexes.includes(index) ? "已加入" : addingIndex === index ? "加入中" : "加入题库"}
+                {isAlreadySaved ? "已加入" : addingIndex === index ? "加入中" : "加入题库"}
               </button>
             </div>
-          ))}
-          {!generated.length && <p className="muted">点击 AI 生题后展示岗位匹配题。</p>}
+          )})}
+          {!generatedJobQuestions.length && <p className="muted">点击 AI 生题后展示岗位匹配题。</p>}
         </div>
         <button className="primary-button" type="button" onClick={generateQuestions} disabled={isGenerating}>
           <Sparkles size={16} />

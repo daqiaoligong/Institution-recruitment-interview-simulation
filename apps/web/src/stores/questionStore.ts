@@ -17,14 +17,18 @@ interface QuestionState {
   selectedSetId: string;
   freeMockQuestions: Question[];
   customQuestions: Question[];
+  generatedJobQuestions: string[];
   loadQuestionSets: () => Promise<void>;
   selectSet: (id: string) => void;
+  setGeneratedJobQuestions: (questions: string[]) => void;
+  updateGeneratedJobQuestion: (index: number, content: string) => void;
   addToFreeMock: (question: Question) => void;
   removeFromFreeMock: (id: string) => void;
   updateFreeMockQuestion: (id: string, content: string) => void;
   clearFreeMock: () => void;
   loadCustomQuestions: () => Promise<void>;
   addCustomQuestion: (content: string) => Promise<{ ok: boolean; message?: string; question?: Question }>;
+  deleteCustomQuestion: (id: string) => Promise<{ ok: boolean; message?: string }>;
 }
 
 export const useQuestionStore = create<QuestionState>()(
@@ -35,6 +39,7 @@ export const useQuestionStore = create<QuestionState>()(
       selectedSetId: seedQuestionSets[0].id,
       freeMockQuestions: [],
       customQuestions: [],
+      generatedJobQuestions: [],
       loadQuestionSets: async () => {
         try {
           const tree = await apiClient<TreeNode[]>("/questions/tree");
@@ -54,6 +59,13 @@ export const useQuestionStore = create<QuestionState>()(
         }
       },
       selectSet: (id) => set({ selectedSetId: id }),
+      setGeneratedJobQuestions: (questions) => set({ generatedJobQuestions: questions }),
+      updateGeneratedJobQuestion: (index, content) =>
+        set((state) => ({
+          generatedJobQuestions: state.generatedJobQuestions.map((item, itemIndex) =>
+            itemIndex === index ? content : item
+          )
+        })),
       addToFreeMock: (question) =>
         set((state) => {
           if (state.freeMockQuestions.some((item) => item.id === question.id)) return state;
@@ -91,6 +103,21 @@ export const useQuestionStore = create<QuestionState>()(
           return {
             ok: false,
             message: error instanceof Error ? error.message : "加入题库失败"
+          };
+        }
+      },
+      deleteCustomQuestion: async (id) => {
+        try {
+          await apiClient<{ id: string; deleted: boolean }>(`/questions/custom/${id}`, { method: "DELETE" });
+          set((state) => ({
+            customQuestions: state.customQuestions.filter((question) => question.id !== id),
+            freeMockQuestions: state.freeMockQuestions.filter((question) => question.id !== id)
+          }));
+          return { ok: true };
+        } catch (error) {
+          return {
+            ok: false,
+            message: error instanceof Error ? error.message : "删除题目失败"
           };
         }
       }
