@@ -23,7 +23,8 @@ interface QuestionState {
   removeFromFreeMock: (id: string) => void;
   updateFreeMockQuestion: (id: string, content: string) => void;
   clearFreeMock: () => void;
-  addCustomQuestion: (content: string) => { ok: boolean; message?: string };
+  loadCustomQuestions: () => Promise<void>;
+  addCustomQuestion: (content: string) => Promise<{ ok: boolean; message?: string; question?: Question }>;
 }
 
 export const useQuestionStore = create<QuestionState>()(
@@ -67,19 +68,31 @@ export const useQuestionStore = create<QuestionState>()(
           )
         })),
       clearFreeMock: () => set({ freeMockQuestions: [] }),
-      addCustomQuestion: (content) => {
+      loadCustomQuestions: async () => {
+        try {
+          const questions = await apiClient<Question[]>("/questions/custom");
+          set({ customQuestions: questions });
+        } catch {
+          // Keep local persisted custom questions available when the backend is unavailable.
+        }
+      },
+      addCustomQuestion: async (content) => {
         if (get().customQuestions.length >= CUSTOM_QUESTION_LIMIT) {
           return { ok: false, message: "我的专属题型最多保存 10 道题" };
         }
-        const question: Question = {
-          id: `custom-${Date.now()}`,
-          title: "我的专属题",
-          content,
-          type: "jobMatching",
-          source: "manual"
-        };
-        set((state) => ({ customQuestions: [...state.customQuestions, question] }));
-        return { ok: true };
+        try {
+          const question = await apiClient<Question>("/questions/custom", {
+            method: "POST",
+            body: JSON.stringify({ content, type: "jobMatching" })
+          });
+          set((state) => ({ customQuestions: [question, ...state.customQuestions] }));
+          return { ok: true, question };
+        } catch (error) {
+          return {
+            ok: false,
+            message: error instanceof Error ? error.message : "加入题库失败"
+          };
+        }
       }
     }),
     { name: "hm-questions" }

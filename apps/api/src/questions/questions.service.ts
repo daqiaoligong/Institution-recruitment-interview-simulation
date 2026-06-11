@@ -45,6 +45,14 @@ export class QuestionsService {
     return questions.map(this.toQuestion);
   }
 
+  async listCustom(userId: string) {
+    const questions = await this.prisma.customQuestion.findMany({
+      where: { userId },
+      orderBy: { createdAt: "desc" }
+    });
+    return questions.map(this.toCustomQuestion);
+  }
+
   async questionSet(id: string) {
     const set = await this.prisma.questionSet.findUnique({
       where: { id },

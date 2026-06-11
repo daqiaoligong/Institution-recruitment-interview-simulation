@@ -14,6 +14,8 @@ export function JobProfilePage() {
   const [requirements, setRequirements] = useState(profile?.requirements ?? "");
   const [extraInfo, setExtraInfo] = useState(profile?.extraInfo ?? "");
   const [generated, setGenerated] = useState<string[]>([]);
+  const [addedIndexes, setAddedIndexes] = useState<number[]>([]);
+  const [addingIndex, setAddingIndex] = useState<number | null>(null);
   const [message, setMessage] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
 
@@ -42,11 +44,29 @@ export function JobProfilePage() {
     try {
       const result = await generateJobQuestions({ userId: user.id, jobTitle, unitName, requirements, extraInfo });
       setGenerated(result.questions.map((question) => question.content));
+      setAddedIndexes([]);
       setMessage("AI 生题已生成，可编辑后加入题库");
     } catch (error) {
       setMessage(error instanceof Error ? `AI 生题失败：${error.message}` : "AI 生题失败");
     } finally {
       setIsGenerating(false);
+    }
+  }
+
+  async function handleAddQuestion(content: string, index: number) {
+    setAddingIndex(index);
+    setMessage("");
+
+    try {
+      const result = await addCustomQuestion(content);
+      if (!result.ok) {
+        setMessage(result.message ?? "加入题库失败");
+        return;
+      }
+      setAddedIndexes((items) => [...items, index]);
+      setMessage("已加入我的专属题型");
+    } finally {
+      setAddingIndex(null);
     }
   }
 
@@ -95,14 +115,19 @@ export function JobProfilePage() {
                   setGenerated(next);
                 }}
               />
-              <button className="secondary-button" onClick={() => addCustomQuestion(item)}>
-                加入题库
+              <button
+                className="secondary-button"
+                type="button"
+                onClick={() => handleAddQuestion(item, index)}
+                disabled={addingIndex === index || addedIndexes.includes(index)}
+              >
+                {addedIndexes.includes(index) ? "已加入" : addingIndex === index ? "加入中" : "加入题库"}
               </button>
             </div>
           ))}
           {!generated.length && <p className="muted">点击 AI 生题后展示岗位匹配题。</p>}
         </div>
-        <button className="primary-button" onClick={generateQuestions} disabled={isGenerating}>
+        <button className="primary-button" type="button" onClick={generateQuestions} disabled={isGenerating}>
           <Sparkles size={16} />
           {isGenerating ? "生成中" : "AI 生题"}
         </button>

@@ -18,6 +18,12 @@ export class QuestionsController {
     return this.questionsService.list({ type, region, keyword });
   }
 
+  @Get("questions/custom")
+  @UseGuards(AuthGuard)
+  customList(@CurrentUser() user: RequestUser) {
+    return this.questionsService.listCustom(user.id);
+  }
+
   @Get("question-sets/:id")
   set(@Param("id") id: string) {
     return this.questionsService.questionSet(id);

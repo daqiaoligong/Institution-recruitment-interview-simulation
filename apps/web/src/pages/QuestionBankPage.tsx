@@ -14,14 +14,18 @@ export function QuestionBankPage() {
     freeMockQuestions,
     removeFromFreeMock,
     updateFreeMockQuestion,
-    loadQuestionSets
+    loadQuestionSets,
+    loadCustomQuestions,
+    customQuestions
   } = useQuestionStore();
   const selectedSet = questionSets.find((set) => set.id === selectedSetId) ?? questionSets[0];
+  const isCustomSelected = selectedSetId === "custom";
   const isReturningToSetup = searchParams.get("returnTo") === "setup";
 
   useEffect(() => {
     void loadQuestionSets();
-  }, [loadQuestionSets]);
+    void loadCustomQuestions();
+  }, [loadCustomQuestions, loadQuestionSets]);
 
   return (
     <section className="three-column-page">
@@ -38,21 +42,28 @@ export function QuestionBankPage() {
               ))}
             </div>
           ))}
+          <div>
+            <strong>我的题库</strong>
+            <button className="tree-item" onClick={() => selectSet("custom")}>
+              我的专属题型
+            </button>
+          </div>
         </div>
       </aside>
       <section className="panel main-panel">
         <div className="panel-header">
-          <h1>{selectedSet.title}</h1>
+          <h1>{isCustomSelected ? "我的专属题型" : selectedSet.title}</h1>
           <select value={selectedSetId} onChange={(event) => selectSet(event.target.value)}>
             {questionSets.map((set) => (
               <option key={set.id} value={set.id}>
                 {set.title}
               </option>
             ))}
+            <option value="custom">我的专属题型</option>
           </select>
         </div>
         <div className="question-list">
-          {selectedSet.questions.map((question, index) => (
+          {(isCustomSelected ? customQuestions : selectedSet.questions).map((question, index) => (
             <article className="question-card" key={question.id}>
               <span className="question-number">{index + 1}</span>
               <p>{question.content}</p>
@@ -62,6 +73,9 @@ export function QuestionBankPage() {
               </button>
             </article>
           ))}
+          {isCustomSelected && !customQuestions.length && (
+            <div className="empty-state">暂无专属题。可先到岗位信息页使用 AI 生题后加入题库。</div>
+          )}
         </div>
       </section>
       <aside className="panel side-panel">
