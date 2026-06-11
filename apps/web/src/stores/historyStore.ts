@@ -1,4 +1,4 @@
-import type { Interview } from "@humian/shared";
+import type { AiReport, AiReview, Interview } from "@humian/shared";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
@@ -6,6 +6,13 @@ interface HistoryState {
   sessions: Interview[];
   saveSession: (session: Interview) => void;
   updateAnswerTranscript: (sessionId: string, answerId: string, transcript: string) => void;
+  updateAnswerTranscription: (
+    sessionId: string,
+    answerId: string,
+    result: { transcript: string; status: "pending" | "completed" | "unavailable" | "failed"; message?: string }
+  ) => void;
+  updateAnswerReview: (sessionId: string, answerId: string, review: AiReview) => void;
+  updateReport: (sessionId: string, report: AiReport) => void;
   getSession: (id: string) => Interview | undefined;
   listSessions: () => Interview[];
 }
@@ -30,6 +37,43 @@ export const useHistoryStore = create<HistoryState>()(
                 }
               : session
           )
+        })),
+      updateAnswerTranscription: (sessionId, answerId, result) =>
+        set((state) => ({
+          sessions: state.sessions.map((session) =>
+            session.id === sessionId
+              ? {
+                  ...session,
+                  answers: session.answers.map((answer) =>
+                    answer.id === answerId
+                      ? {
+                          ...answer,
+                          transcript: result.transcript,
+                          transcriptStatus: result.status,
+                          transcriptMessage: result.message
+                        }
+                      : answer
+                  )
+                }
+              : session
+          )
+        })),
+      updateAnswerReview: (sessionId, answerId, review) =>
+        set((state) => ({
+          sessions: state.sessions.map((session) =>
+            session.id === sessionId
+              ? {
+                  ...session,
+                  answers: session.answers.map((answer) =>
+                    answer.id === answerId ? { ...answer, aiReview: review } : answer
+                  )
+                }
+              : session
+          )
+        })),
+      updateReport: (sessionId, report) =>
+        set((state) => ({
+          sessions: state.sessions.map((session) => (session.id === sessionId ? { ...session, report } : session))
         })),
       getSession: (id) => get().sessions.find((session) => session.id === id),
       listSessions: () =>

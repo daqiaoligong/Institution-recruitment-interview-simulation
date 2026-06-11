@@ -1,5 +1,6 @@
 import { Sparkles } from "lucide-react";
 import { FormEvent, useEffect, useState } from "react";
+import { generateJobQuestions } from "../services/aiService";
 import { useAuthStore } from "../stores/authStore";
 import { useJobProfileStore } from "../stores/jobProfileStore";
 import { useQuestionStore } from "../stores/questionStore";
@@ -14,6 +15,7 @@ export function JobProfilePage() {
   const [extraInfo, setExtraInfo] = useState(profile?.extraInfo ?? "");
   const [generated, setGenerated] = useState<string[]>([]);
   const [message, setMessage] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
 
   useEffect(() => {
     void loadProfile();
@@ -33,14 +35,19 @@ export function JobProfilePage() {
     setMessage(result.ok ? "岗位信息已保存" : result.message ?? "岗位信息已本地保存");
   }
 
-  function generateQuestions() {
-    const base = jobTitle || "报考岗位";
-    setGenerated([
-      `请结合你的经历，谈谈你为什么适合${base}？`,
-      `${base}工作中需要跨部门沟通时，你会如何推进？`,
-      `如果群众对${unitName || "单位"}服务流程不满意，你会如何调研并改进？`,
-      `请谈谈你对${base}岗位服务意识和执行力的理解。`
-    ]);
+  async function generateQuestions() {
+    setIsGenerating(true);
+    setMessage("");
+
+    try {
+      const result = await generateJobQuestions({ userId: user.id, jobTitle, unitName, requirements, extraInfo });
+      setGenerated(result.questions.map((question) => question.content));
+      setMessage("AI 生题已生成，可编辑后加入题库");
+    } catch (error) {
+      setMessage(error instanceof Error ? `AI 生题失败：${error.message}` : "AI 生题失败");
+    } finally {
+      setIsGenerating(false);
+    }
   }
 
   return (
@@ -95,9 +102,9 @@ export function JobProfilePage() {
           ))}
           {!generated.length && <p className="muted">点击 AI 生题后展示岗位匹配题。</p>}
         </div>
-        <button className="primary-button" onClick={generateQuestions}>
+        <button className="primary-button" onClick={generateQuestions} disabled={isGenerating}>
           <Sparkles size={16} />
-          AI 生题
+          {isGenerating ? "生成中" : "AI 生题"}
         </button>
       </aside>
     </section>

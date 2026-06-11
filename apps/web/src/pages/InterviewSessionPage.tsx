@@ -119,7 +119,7 @@ export function InterviewSessionPage() {
     const finished = finishInterview();
     if (finished) {
       saveSession(finished);
-      navigate(`/interview/review/${finished.id}`);
+      navigate(`/interview/processing/${finished.id}`);
     }
     setIsSaving(false);
   }, [blockingError, current, currentQuestion, finishInterview, isSaving, navigate, saveCurrentAnswer, saveSession, stopCapture]);

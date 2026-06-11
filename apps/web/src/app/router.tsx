@@ -5,6 +5,7 @@ import { HomePage } from "../pages/HomePage";
 import { InterviewReviewPage } from "../pages/InterviewReviewPage";
 import { InterviewSessionPage } from "../pages/InterviewSessionPage";
 import { InterviewSetupPage } from "../pages/InterviewSetupPage";
+import { InterviewProcessingPage } from "../pages/InterviewProcessingPage";
 import { JobProfilePage } from "../pages/JobProfilePage";
 import { LoginPage } from "../pages/LoginPage";
 import { ProfilePage } from "../pages/ProfilePage";
@@ -25,6 +26,7 @@ export const router = createBrowserRouter([
       { index: true, element: <HomePage /> },
       { path: "interview/setup", element: <RequireAuth><InterviewSetupPage /></RequireAuth> },
       { path: "interview/session/:id", element: <RequireAuth><InterviewSessionPage /></RequireAuth> },
+      { path: "interview/processing/:id", element: <RequireAuth><InterviewProcessingPage /></RequireAuth> },
       { path: "interview/review/:id", element: <RequireAuth><InterviewReviewPage /></RequireAuth> },
       { path: "question-bank", element: <RequireAuth><QuestionBankPage /></RequireAuth> },
       { path: "job-profile", element: <RequireAuth><JobProfilePage /></RequireAuth> },

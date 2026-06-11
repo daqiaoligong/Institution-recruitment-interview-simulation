@@ -1,7 +1,6 @@
 import type { Interview, InterviewAnswer, InterviewMode, Question } from "@humian/shared";
 import { DEFAULT_ANSWER_SECONDS } from "@humian/shared";
 import { create } from "zustand";
-import { reviewAnswers, createMockReport } from "../services/mockAiService";
 
 type AnswerDraft = {
   transcript?: string;
@@ -107,13 +106,10 @@ export const useInterviewStore = create<InterviewState>((set, get) => ({
   finishInterview: () => {
     const current = get().current;
     if (!current) return undefined;
-    const answers = reviewAnswers(current.answers);
     const finished = {
       ...current,
       status: "finished" as const,
-      answers,
-      endedAt: new Date().toISOString(),
-      report: createMockReport(answers)
+      endedAt: new Date().toISOString()
     };
     set({ current: finished });
     return finished;

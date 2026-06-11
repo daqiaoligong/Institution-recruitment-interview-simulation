@@ -45,6 +45,8 @@ export interface InterviewAnswer {
   questionTitle: string;
   questionContentSnapshot: string;
   transcript: string;
+  transcriptStatus?: "pending" | "completed" | "unavailable" | "failed";
+  transcriptMessage?: string;
   durationSeconds?: number;
   audioBlobId?: string;
   audioUrl?: string;
