@@ -1,4 +1,5 @@
 import { ChevronDown, ChevronUp, Pause, Play, RotateCcw } from "lucide-react";
+import { motion } from "framer-motion";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { saveAudioBlob } from "../services/indexedDbService";
@@ -250,7 +251,24 @@ export function InterviewSessionPage() {
       )}
 
       <div className="interview-controls">
-        <div className={isRecording ? "record-dot active" : "record-dot"}>●</div>
+        <motion.div 
+          className={isRecording ? "record-dot active" : "record-dot"}
+          animate={isRecording ? { 
+            scale: [1, 1.15, 1],
+            boxShadow: [
+              "0 0 0 0 rgba(255, 122, 24, 0.3)",
+              "0 0 0 20px rgba(255, 122, 24, 0)",
+              "0 0 0 0 rgba(255, 122, 24, 0)"
+            ]
+          } : { scale: 1, boxShadow: "0 0 0 0 rgba(255, 122, 24, 0)" }}
+          transition={isRecording ? {
+            duration: 1.8,
+            repeat: Infinity,
+            ease: "easeInOut"
+          } : {}}
+        >
+          ●
+        </motion.div>
         <button className="round-control" onClick={handlePauseToggle} disabled={isSaving || Boolean(blockingError)}>
           {current.status === "paused" ? <Play size={20} /> : <Pause size={20} />}
         </button>

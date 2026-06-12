@@ -49,7 +49,7 @@ export const useQuestionStore = create<QuestionState>()(
             set((state) => ({
               questionTree: tree,
               questionSets,
-              selectedSetId: questionSets.some((item) => item.id === state.selectedSetId)
+              selectedSetId: state.selectedSetId === "custom" || questionSets.some((item) => item.id === state.selectedSetId)
                 ? state.selectedSetId
                 : questionSets[0].id
             }));

@@ -2,6 +2,17 @@ import { Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useQuestionStore } from "../stores/questionStore";
+import { motion, type Variants } from "framer-motion";
+
+const listVariants: Variants = {
+  hidden: { opacity: 0 },
+  show: { opacity: 1, transition: { staggerChildren: 0.05 } }
+};
+
+const itemVariants: Variants = {
+  hidden: { opacity: 0, y: 15 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } }
+};
 
 export function QuestionBankPage() {
   const [searchParams] = useSearchParams();
@@ -120,9 +131,15 @@ export function QuestionBankPage() {
           </div>
         </div>
         {isCustomSelected && customMessage && <div className="success-message">{customMessage}</div>}
-        <div className="question-list">
+        <motion.div 
+          className="question-list"
+          variants={listVariants}
+          initial="hidden"
+          animate="show"
+          key={selectedSetId}
+        >
           {isCustomSelected && isAddingCustom && (
-            <article className="custom-editor-card">
+            <motion.article className="custom-editor-card" variants={itemVariants}>
               <textarea
                 value={newCustomContent}
                 onChange={(event) => setNewCustomContent(event.target.value)}
@@ -148,10 +165,10 @@ export function QuestionBankPage() {
                   取消
                 </button>
               </div>
-            </article>
+            </motion.article>
           )}
           {(isCustomSelected ? customQuestions : selectedSet.questions).map((question, index) => (
-            <article className="question-card" key={question.id}>
+            <motion.article className="question-card" key={question.id} variants={itemVariants}>
               <span className="question-number">{index + 1}</span>
               <p>{question.content}</p>
               <div className="question-actions">
@@ -170,12 +187,12 @@ export function QuestionBankPage() {
                   </button>
                 )}
               </div>
-            </article>
+            </motion.article>
           ))}
           {isCustomSelected && !customQuestions.length && (
-            <div className="empty-state">暂无专属题。可先到岗位信息页使用 AI 生题后加入题库。</div>
+            <motion.div className="empty-state" variants={itemVariants}>暂无专属题。可先到岗位信息页使用 AI 生题后加入题库。</motion.div>
           )}
-        </div>
+        </motion.div>
       </section>
       <aside className="panel side-panel">
         <h2>自由组题</h2>

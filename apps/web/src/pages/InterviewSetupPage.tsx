@@ -6,6 +6,20 @@ import { ensureMicrophonePermission } from "../services/recorderService";
 import { useAuthStore } from "../stores/authStore";
 import { useInterviewStore } from "../stores/interviewStore";
 import { useQuestionStore } from "../stores/questionStore";
+import { motion, type Variants } from "framer-motion";
+
+const containerVariants: Variants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.06 }
+  }
+};
+
+const itemVariants: Variants = {
+  hidden: { opacity: 0, y: 15 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } }
+};
 
 export function InterviewSetupPage() {
   const navigate = useNavigate();
@@ -67,26 +81,33 @@ export function InterviewSetupPage() {
 
   return (
     <section className="setup-page page-center">
-      <h1>开始前设置</h1>
-      <p>选择套题、答题时间和面试形式</p>
-      <div className="setup-card">
-        <label>
+      <motion.div initial="hidden" animate="show" variants={itemVariants}>
+        <h1 style={{ margin: 0 }}>开始前设置</h1>
+        <p style={{ marginTop: 8 }}>选择套题、答题时间和面试形式</p>
+      </motion.div>
+      <motion.div 
+        className="setup-card"
+        variants={containerVariants}
+        initial="hidden"
+        animate="show"
+      >
+        <motion.label variants={itemVariants}>
           题目来源
           <select value={source} onChange={(event) => changeSource(event.target.value as "set" | "free")}>
             <option value="set">题库套题</option>
             <option value="free">自由组题（{freeMockQuestions.length} 道）</option>
           </select>
-        </label>
+        </motion.label>
         {source === "free" && (
-          <div className="source-tip">
+          <motion.div className="source-tip" variants={itemVariants}>
             当前将使用自由组题中的 {freeMockQuestions.length} 道题开始模拟。
             <button className="link-button" onClick={() => navigate("/question-bank?returnTo=setup")}>
               继续组题
             </button>
-          </div>
+          </motion.div>
         )}
         {source === "set" && (
-          <label>
+          <motion.label variants={itemVariants}>
             选择题目
             <select value={selectedSetId} onChange={(event) => selectSet(event.target.value)}>
               {questionSets.map((set) => (
@@ -95,29 +116,34 @@ export function InterviewSetupPage() {
                 </option>
               ))}
             </select>
-          </label>
+          </motion.label>
         )}
-        <label>
+        <motion.label variants={itemVariants}>
           每道题面试时间
           <select value={seconds} onChange={(event) => setSeconds(Number(event.target.value))}>
             <option value={180}>3 分钟 / 题</option>
             <option value={240}>4 分钟 / 题</option>
             <option value={300}>5 分钟 / 题</option>
           </select>
-        </label>
-        <label>
+        </motion.label>
+        <motion.label variants={itemVariants}>
           面试形式
           <select value={mode} onChange={(event) => setMode(event.target.value as InterviewMode)}>
             <option value="listen">听题模式</option>
             <option value="read">看题模式</option>
           </select>
-        </label>
-        {error && <div className="form-error">{error}</div>}
-        <button className="primary-button" onClick={start} disabled={isCheckingMic}>
+        </motion.label>
+        {error && <motion.div className="form-error" variants={itemVariants}>{error}</motion.div>}
+        <motion.button 
+          className="primary-button" 
+          onClick={start} 
+          disabled={isCheckingMic}
+          variants={itemVariants}
+        >
           <Play size={18} />
           {isCheckingMic ? "检查麦克风中" : "开始面试"}
-        </button>
-      </div>
+        </motion.button>
+      </motion.div>
     </section>
   );
 }

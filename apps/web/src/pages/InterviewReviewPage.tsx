@@ -1,13 +1,25 @@
 import type { InterviewAnswer } from "@humian/shared";
-import { Sparkles } from "lucide-react";
+import { Sparkles, FileText, CheckCircle2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+
 import { generateInterviewReport, reviewAnswer } from "../services/aiService";
 import { getAudioBlob } from "../services/indexedDbService";
 import { useHistoryStore } from "../stores/historyStore";
 import { useJobProfileStore } from "../stores/jobProfileStore";
 
-function ReviewAnswerCard({
+const listVariants = {
+  hidden: { opacity: 0 },
+  show: { opacity: 1, transition: { staggerChildren: 0.1 } }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, x: -20 },
+  show: { opacity: 1, x: 0, transition: { duration: 0.3 } }
+};
+
+function AnswerDetailView({
   answer,
   sessionId,
   onTranscriptChange,
@@ -71,12 +83,25 @@ function ReviewAnswerCard({
   }
 
   return (
-    <article className="review-answer-card">
-      <div className="review-answer-heading">
-        <h3>第 {answer.sortOrder} 题</h3>
-        <span>{answer.durationSeconds ? `${answer.durationSeconds} 秒` : "未记录时长"}</span>
+    <motion.div 
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -10 }}
+      transition={{ duration: 0.2 }}
+      className="answer-detail-wrapper"
+      style={{ display: 'grid', gap: '28px' }}
+    >
+      <div>
+        <div className="review-answer-heading" style={{ marginBottom: '14px' }}>
+          <h2 style={{ margin: 0, fontSize: '24px' }}>第 {answer.sortOrder} 题</h2>
+          <span style={{ fontSize: '14px', color: 'var(--muted)', fontWeight: 600 }}>
+            耗时：{answer.durationSeconds ? `${answer.durationSeconds} 秒` : "未记录时长"}
+          </span>
+        </div>
+        <p style={{ fontSize: '18px', fontWeight: 600, color: 'var(--ink)', lineHeight: 1.6, margin: 0 }}>
+          {answer.questionContentSnapshot}
+        </p>
       </div>
-      <p>{answer.questionContentSnapshot}</p>
 
       <div className="audio-player-block">
         {audioUrl ? <audio controls src={audioUrl} /> : <span>{audioMessage}</span>}
@@ -96,11 +121,36 @@ function ReviewAnswerCard({
         <div className="transcript-note">{answer.transcriptMessage ?? "转写暂不可用，可手动补充文本后生成点评。"}</div>
       ) : null}
 
-      <button className="secondary-button" onClick={handleReview} disabled={isReviewing}>
-        <Sparkles size={16} />
-        {isReviewing ? "点评中" : "生成单题点评"}
-      </button>
-    </article>
+      <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+        <button className="primary-button" onClick={handleReview} disabled={isReviewing}>
+          <Sparkles size={16} />
+          {isReviewing ? "点评生成中..." : "生成单题点评"}
+        </button>
+      </div>
+
+      {(answer.aiReview?.comment || answer.aiReview?.thinking) && (
+        <div style={{ display: 'grid', gap: '20px', marginTop: '10px', paddingTop: '30px', borderTop: '1px solid var(--line)' }}>
+          <div>
+            <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--brand)', margin: '0 0 12px' }}>
+              <CheckCircle2 size={20} /> AI 综合评语
+            </h3>
+            <p style={{ lineHeight: 1.7, margin: 0 }}>{answer.aiReview.comment}</p>
+            {answer.aiReview.suggestions && answer.aiReview.suggestions.length > 0 && (
+              <ul style={{ paddingLeft: '20px', lineHeight: 1.7, color: 'var(--muted)', marginTop: '12px' }}>
+                {answer.aiReview.suggestions.map((item) => <li key={item}>{item}</li>)}
+              </ul>
+            )}
+          </div>
+
+          <div style={{ marginTop: '12px' }}>
+            <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--ink)', margin: '0 0 12px' }}>
+              <FileText size={20} /> 标准答题思路
+            </h3>
+            <p style={{ lineHeight: 1.7, color: 'var(--muted)', margin: 0 }}>{answer.aiReview.thinking}</p>
+          </div>
+        </div>
+      )}
+    </motion.div>
   );
 }
 
@@ -111,11 +161,10 @@ export function InterviewReviewPage() {
   const updateAnswerReview = useHistoryStore((state) => state.updateAnswerReview);
   const updateReport = useHistoryStore((state) => state.updateReport);
   const profile = useJobProfileStore((state) => state.profile);
-  const [selectedAnswerId, setSelectedAnswerId] = useState<string>();
+  
+  const [selectedId, setSelectedId] = useState<string>("report");
   const [isReporting, setIsReporting] = useState(false);
   const [message, setMessage] = useState("");
-
-  const selected = session?.answers.find((answer) => answer.id === selectedAnswerId) ?? session?.answers[0];
 
   if (!session) {
     return (
@@ -127,6 +176,7 @@ export function InterviewReviewPage() {
   }
 
   const activeSession = session;
+  const selectedAnswer = activeSession.answers.find((a) => a.id === selectedId);
 
   async function handleReview(answer: InterviewAnswer, transcript: string) {
     const review = await reviewAnswer({
@@ -136,8 +186,8 @@ export function InterviewReviewPage() {
       jobProfile: profile
     });
     updateAnswerReview(activeSession.id, answer.id, review);
-    setSelectedAnswerId(answer.id);
-    setMessage("单题 AI 点评已生成");
+    setMessage("单题点评已更新");
+    setTimeout(() => setMessage(""), 3000);
   }
 
   async function handleReport() {
@@ -153,58 +203,117 @@ export function InterviewReviewPage() {
         jobProfile: profile
       });
       updateReport(activeSession.id, report);
-      setMessage("整场 AI 报告已生成");
+      setMessage("整场总评报告已生成");
+      setTimeout(() => setMessage(""), 3000);
     } catch (error) {
-      setMessage(error instanceof Error ? `整场报告生成失败：${error.message}` : "整场报告生成失败");
+      setMessage(error instanceof Error ? `生成失败：${error.message}` : "生成失败");
     } finally {
       setIsReporting(false);
     }
   }
 
   return (
-    <section className="review-page">
-      <div>
-        <h1>面试结束复盘</h1>
-        <p className="muted">逐题查看题目、录音、转写文本、AI 评语与答题思路</p>
-        {message && <div className="success-message">{message}</div>}
-        <div className="review-answer-list">
-          {activeSession.answers.map((answer) => (
-            <ReviewAnswerCard
-              answer={answer}
-              key={answer.id}
-              sessionId={activeSession.id}
-              onTranscriptChange={updateAnswerTranscript}
-              onReview={handleReview}
-            />
-          ))}
+    <div style={{ maxWidth: '1400px', margin: '0 auto', width: '100%' }}>
+      <div style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+        <div>
+          <h1 style={{ margin: 0 }}>面试结束复盘</h1>
+          <p className="muted" style={{ margin: '6px 0 0' }}>在左侧大纲选择题目或查看整场报告</p>
         </div>
+        {message && <div className="success-message" style={{ margin: 0, padding: '8px 16px' }}>{message}</div>}
       </div>
-      <aside className="review-side">
-        <section className="panel">
-          <h2>AI 评语</h2>
-          <p>{selected?.aiReview?.comment ?? "点击左侧“生成单题点评”后展示。"}</p>
-          <ul>
-            {selected?.aiReview?.suggestions.map((item) => <li key={item}>{item}</li>)}
-          </ul>
-        </section>
-        <section className="panel">
-          <h2>AI 答题思路</h2>
-          <p>{selected?.aiReview?.thinking ?? "暂无答题思路"}</p>
-        </section>
-        <section className="panel">
-          <h2>整场总评</h2>
-          <p>{activeSession.report?.summary ?? "点击下方按钮生成整场报告。"}</p>
-          <div className="score-row">
-            <span>总分 {activeSession.report?.totalScore ?? "-"}</span>
-            <span>岗位匹配 {activeSession.report?.matchScore ?? "-"}</span>
-            <span>稳定度 {activeSession.report?.stabilityScore ?? "-"}</span>
-          </div>
-          <button className="primary-button block-link" onClick={handleReport} disabled={isReporting}>
-            <Sparkles size={16} />
-            {isReporting ? "生成中" : "生成整场报告"}
-          </button>
-        </section>
-      </aside>
-    </section>
+
+      <section className="review-page">
+        {/* Master List (Left Sidebar) */}
+        <motion.div 
+          className="master-list"
+          variants={listVariants}
+          initial="hidden"
+          animate="show"
+        >
+          <motion.button 
+            variants={itemVariants}
+            className={`master-item ${selectedId === "report" ? "active" : ""}`}
+            onClick={() => setSelectedId("report")}
+          >
+            <div className="master-item-header">
+              <span>整场报告总览</span>
+            </div>
+            <p>{activeSession.report?.summary ? "已生成总评报告" : "点击生成整场表现评估"}</p>
+          </motion.button>
+
+          <div style={{ height: '1px', background: 'var(--line)', margin: '4px 0' }} />
+
+          {activeSession.answers.map((answer) => (
+            <motion.button
+              key={answer.id}
+              variants={itemVariants}
+              className={`master-item ${selectedId === answer.id ? "active" : ""}`}
+              onClick={() => setSelectedId(answer.id)}
+            >
+              <div className="master-item-header">
+                <span>第 {answer.sortOrder} 题</span>
+                <span style={{ fontSize: '12px', color: 'var(--muted)', fontWeight: 500 }}>
+                  {answer.durationSeconds ? `${answer.durationSeconds}s` : "-"}
+                </span>
+              </div>
+              <p>{answer.questionContentSnapshot}</p>
+            </motion.button>
+          ))}
+        </motion.div>
+
+        {/* Detail Inspector (Right View) */}
+        <div className="detail-inspector">
+          <AnimatePresence mode="wait">
+            {selectedId === "report" ? (
+              <motion.div
+                key="report"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                style={{ display: 'grid', gap: '30px' }}
+              >
+                <div>
+                  <h2 style={{ margin: '0 0 16px', fontSize: '28px' }}>整场面试评估报告</h2>
+                  <div className="score-row" style={{ display: 'flex', gap: '16px' }}>
+                    <div style={{ padding: '10px 20px', background: 'var(--brand-soft)', color: 'var(--brand)', borderRadius: '12px', fontWeight: 800, fontSize: '16px' }}>
+                      总分：{activeSession.report?.totalScore ?? "-"}
+                    </div>
+                    <div style={{ padding: '10px 20px', background: '#f8fafc', border: '1px solid var(--line)', borderRadius: '12px', fontWeight: 600, color: 'var(--ink)' }}>
+                      岗位匹配：{activeSession.report?.matchScore ?? "-"}
+                    </div>
+                    <div style={{ padding: '10px 20px', background: '#f8fafc', border: '1px solid var(--line)', borderRadius: '12px', fontWeight: 600, color: 'var(--ink)' }}>
+                      稳定度：{activeSession.report?.stabilityScore ?? "-"}
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ background: '#f8fafc', padding: '24px', borderRadius: '16px', border: '1px solid var(--line)' }}>
+                  <h3 style={{ margin: '0 0 12px' }}>综合评语</h3>
+                  <p style={{ margin: 0, lineHeight: 1.7, color: 'var(--ink)' }}>
+                    {activeSession.report?.summary ?? "尚未生成整场报告。系统将综合您的所有单题表现、用词习惯、停顿和逻辑，给出最终评估。"}
+                  </p>
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+                  <button className="hero-button" onClick={handleReport} disabled={isReporting} style={{ height: '52px', minWidth: '200px' }}>
+                    <Sparkles size={18} />
+                    {isReporting ? "AI 报告生成中..." : activeSession.report ? "重新生成报告" : "立即生成整场报告"}
+                  </button>
+                </div>
+              </motion.div>
+            ) : selectedAnswer ? (
+              <AnswerDetailView
+                key={selectedAnswer.id}
+                answer={selectedAnswer}
+                sessionId={activeSession.id}
+                onTranscriptChange={updateAnswerTranscript}
+                onReview={handleReview}
+              />
+            ) : null}
+          </AnimatePresence>
+        </div>
+      </section>
+    </div>
   );
 }
