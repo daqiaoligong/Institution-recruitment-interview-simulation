@@ -21,6 +21,10 @@ export class RecorderService {
   private pausedAt = 0;
   private pausedDuration = 0;
 
+  private audioCtx?: AudioContext;
+  private analyser?: AnalyserNode;
+  private source?: MediaStreamAudioSourceNode;
+
   async start() {
     if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
       throw new Error("当前浏览器不支持录音功能，请使用 Chrome 或 Edge。");
@@ -35,6 +39,17 @@ export class RecorderService {
     this.startedAt = Date.now();
     this.pausedAt = 0;
     this.pausedDuration = 0;
+
+    // Set up AudioContext for visualization
+    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+    if (AudioContextClass) {
+      this.audioCtx = new AudioContextClass();
+      this.analyser = this.audioCtx.createAnalyser();
+      this.analyser.fftSize = 256;
+      this.source = this.audioCtx.createMediaStreamSource(stream);
+      this.source.connect(this.analyser);
+    }
+
     this.recorder = new MediaRecorder(stream, { mimeType });
     this.recorder.ondataavailable = (event) => {
       if (event.data.size > 0) this.chunks.push(event.data);
@@ -46,6 +61,7 @@ export class RecorderService {
     if (this.recorder?.state === "recording") {
       this.pausedAt = Date.now();
       this.recorder.pause();
+      this.audioCtx?.suspend();
     }
   }
 
@@ -54,11 +70,19 @@ export class RecorderService {
       this.pausedDuration += Date.now() - this.pausedAt;
       this.pausedAt = 0;
       this.recorder.resume();
+      this.audioCtx?.resume();
     }
   }
 
   getState() {
     return this.recorder?.state ?? "inactive";
+  }
+
+  getFrequencyData(): Uint8Array | null {
+    if (!this.analyser) return null;
+    const dataArray = new Uint8Array(this.analyser.frequencyBinCount);
+    this.analyser.getByteFrequencyData(dataArray);
+    return dataArray;
   }
 
   async stop(): Promise<RecordedAudio> {
@@ -68,6 +92,15 @@ export class RecorderService {
     return new Promise((resolve) => {
       recorder.onstop = () => {
         recorder.stream.getTracks().forEach((track) => track.stop());
+        
+        if (this.source) this.source.disconnect();
+        if (this.audioCtx && this.audioCtx.state !== 'closed') {
+          void this.audioCtx.close();
+        }
+        this.analyser = undefined;
+        this.source = undefined;
+        this.audioCtx = undefined;
+
         const blob = new Blob(this.chunks, { type: recorder.mimeType });
         const activePausedDuration = this.pausedAt ? Date.now() - this.pausedAt : 0;
         const durationSeconds = Math.max(

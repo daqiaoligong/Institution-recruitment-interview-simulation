@@ -7,6 +7,7 @@ import { RecorderService } from "../services/recorderService";
 import { speak, stopSpeaking } from "../services/speechService";
 import { useHistoryStore } from "../stores/historyStore";
 import { useInterviewStore } from "../stores/interviewStore";
+import { AudioVisualizer } from "../components/AudioVisualizer";
 
 function formatTime(seconds: number) {
   const mins = Math.floor(seconds / 60).toString().padStart(2, "0");
@@ -269,6 +270,7 @@ export function InterviewSessionPage() {
         >
           ●
         </motion.div>
+        {isRecording && <AudioVisualizer recorder={recorderRef.current} />}
         <button className="round-control" onClick={handlePauseToggle} disabled={isSaving || Boolean(blockingError)}>
           {current.status === "paused" ? <Play size={20} /> : <Pause size={20} />}
         </button>
