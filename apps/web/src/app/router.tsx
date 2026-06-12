@@ -13,7 +13,8 @@ import { QuestionBankPage } from "../pages/QuestionBankPage";
 import { useAuthStore } from "../stores/authStore";
 
 function RequireAuth({ children }: { children: ReactNode }) {
-  const { currentUser, token } = useAuthStore.getState();
+  const currentUser = useAuthStore((state) => state.currentUser);
+  const token = useAuthStore((state) => state.token);
   return currentUser && token ? children : <Navigate to="/login" replace />;
 }
 

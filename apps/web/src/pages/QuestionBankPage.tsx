@@ -212,9 +212,15 @@ export function QuestionBankPage() {
             </p>
           )}
         </div>
-        <Link className="primary-button block-link" to="/interview/setup?source=free">
-          {freeMockQuestions.length ? "用自由组题开始模拟" : "组题后开始模拟"}
-        </Link>
+        {freeMockQuestions.length ? (
+          <Link className="primary-button block-link" to="/interview/setup?source=free">
+            用自由组题开始模拟
+          </Link>
+        ) : (
+          <button className="primary-button block-link" type="button" disabled>
+            请先加入题目
+          </button>
+        )}
       </aside>
     </section>
   );
