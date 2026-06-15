@@ -18,20 +18,25 @@ function RequireAuth({ children }: { children: ReactNode }) {
   return currentUser && token ? children : <Navigate to="/login" replace />;
 }
 
-export const router = createBrowserRouter([
-  { path: "/login", element: <LoginPage /> },
-  {
-    path: "/",
-    element: <AppLayout />,
-    children: [
-      { index: true, element: <HomePage /> },
-      { path: "interview/setup", element: <RequireAuth><InterviewSetupPage /></RequireAuth> },
-      { path: "interview/session/:id", element: <RequireAuth><InterviewSessionPage /></RequireAuth> },
-      { path: "interview/processing/:id", element: <RequireAuth><InterviewProcessingPage /></RequireAuth> },
-      { path: "interview/review/:id", element: <RequireAuth><InterviewReviewPage /></RequireAuth> },
-      { path: "question-bank", element: <RequireAuth><QuestionBankPage /></RequireAuth> },
-      { path: "job-profile", element: <RequireAuth><JobProfilePage /></RequireAuth> },
-      { path: "profile", element: <RequireAuth><ProfilePage /></RequireAuth> }
-    ]
-  }
-]);
+const basename = import.meta.env.BASE_URL === "/" ? undefined : import.meta.env.BASE_URL.replace(/\/$/, "");
+
+export const router = createBrowserRouter(
+  [
+    { path: "/login", element: <LoginPage /> },
+    {
+      path: "/",
+      element: <AppLayout />,
+      children: [
+        { index: true, element: <HomePage /> },
+        { path: "interview/setup", element: <RequireAuth><InterviewSetupPage /></RequireAuth> },
+        { path: "interview/session/:id", element: <RequireAuth><InterviewSessionPage /></RequireAuth> },
+        { path: "interview/processing/:id", element: <RequireAuth><InterviewProcessingPage /></RequireAuth> },
+        { path: "interview/review/:id", element: <RequireAuth><InterviewReviewPage /></RequireAuth> },
+        { path: "question-bank", element: <RequireAuth><QuestionBankPage /></RequireAuth> },
+        { path: "job-profile", element: <RequireAuth><JobProfilePage /></RequireAuth> },
+        { path: "profile", element: <RequireAuth><ProfilePage /></RequireAuth> }
+      ]
+    }
+  ],
+  { basename }
+);
