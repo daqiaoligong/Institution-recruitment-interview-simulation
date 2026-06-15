@@ -488,7 +488,7 @@ body.home-scroll-lock .app-main {
   color: white;
   background:
     linear-gradient(rgba(0, 0, 0, 0.28), rgba(0, 0, 0, 0.16)),
-    url("/assets/interview-bg.png") center / cover no-repeat;
+    var(--interview-bg-image) center / cover no-repeat;
 }
 
 .interview-page.immersive::after {

@@ -1,6 +1,7 @@
 import { FormEvent, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../stores/authStore";
+import { publicAsset } from "../utils/publicAsset";
 
 export function LoginPage() {
   const [username, setUsername] = useState("考生1234");
@@ -28,7 +29,7 @@ export function LoginPage() {
   return (
     <div className="login-page">
       <form className="login-card" onSubmit={handleSubmit}>
-        <img src="/assets/logo.png" alt="沪面冲鸭" className="login-logo" />
+        <img src={publicAsset("assets/logo.png")} alt="沪面冲鸭" className="login-logo" />
         <h1>登录沪面冲鸭</h1>
         <p>保存你的面试记录与 AI 复盘</p>
         <label>

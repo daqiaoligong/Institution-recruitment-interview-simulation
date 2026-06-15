@@ -1,6 +1,6 @@
 import { ChevronDown, ChevronUp, Pause, Play, RotateCcw } from "lucide-react";
 import { motion } from "framer-motion";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { type CSSProperties, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { saveAudioBlob } from "../services/indexedDbService";
 import { RecorderService } from "../services/recorderService";
@@ -8,6 +8,7 @@ import { speak, stopSpeaking } from "../services/speechService";
 import { useHistoryStore } from "../stores/historyStore";
 import { useInterviewStore } from "../stores/interviewStore";
 import { AudioVisualizer } from "../components/AudioVisualizer";
+import { publicAsset } from "../utils/publicAsset";
 
 function formatTime(seconds: number) {
   const mins = Math.floor(seconds / 60).toString().padStart(2, "0");
@@ -210,10 +211,13 @@ export function InterviewSessionPage() {
 
   const modeLabel = current.mode === "listen" ? "听题模式" : "看题模式";
   const readExpanded = current.mode === "read" && isQuestionVisible;
+  const immersiveStyle = {
+    "--interview-bg-image": `url("${publicAsset("assets/interview-bg.png")}")`
+  } as CSSProperties;
   const recordingLabel = current.status === "paused" && !blockingError ? "已暂停" : recordingMessage;
 
   return (
-    <section className={readExpanded ? "interview-page read-expanded" : "interview-page immersive"}>
+    <section className={readExpanded ? "interview-page read-expanded" : "interview-page immersive"} style={readExpanded ? undefined : immersiveStyle}>
       <div className="interview-mode">{modeLabel}</div>
       <div className="countdown-pill">
         <span>倒计时</span>

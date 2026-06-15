@@ -1,5 +1,6 @@
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../stores/authStore";
+import { publicAsset } from "../../utils/publicAsset";
 
 export function TopNav() {
   const { currentUser, token, logout } = useAuthStore();
@@ -9,8 +10,8 @@ export function TopNav() {
   return (
     <header className="top-nav">
       <Link to="/" className="brand">
-        <img src="/assets/logo.png" alt="logo" className="brand-logo" />
-        <img src="/assets/name.png" alt="沪面冲鸭" className="brand-name" />
+        <img src={publicAsset("assets/logo.png")} alt="logo" className="brand-logo" />
+        <img src={publicAsset("assets/name.png")} alt="沪面冲鸭" className="brand-name" />
       </Link>
       <nav className="nav-links">
         <NavLink to="/interview/setup">面试模拟</NavLink>

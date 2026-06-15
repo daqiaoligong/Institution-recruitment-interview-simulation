@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../stores/authStore";
 import { motion, type Variants } from "framer-motion";
+import { publicAsset } from "../utils/publicAsset";
 
 const container: Variants = {
   hidden: { opacity: 0 },
@@ -39,7 +40,7 @@ export function HomePage() {
     >
       <motion.h1 variants={item}>上海事业单位面试模拟</motion.h1>
       <motion.p variants={item}>听题、看题、录音与 AI 复盘的一体化练习空间</motion.p>
-      <motion.img variants={item} src="/assets/logo.png" alt="沪面冲鸭" className="hero-logo" />
+      <motion.img variants={item} src={publicAsset("assets/logo.png")} alt="沪面冲鸭" className="hero-logo" />
       <motion.button 
         variants={item}
         className="hero-button" 
