@@ -1,5 +1,5 @@
 import { FormEvent, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuthStore } from "../stores/authStore";
 import { publicAsset } from "../utils/publicAsset";
 
@@ -10,6 +10,7 @@ export function LoginPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const login = useAuthStore((state) => state.login);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -23,7 +24,7 @@ export function LoginPage() {
       setError(result.message ?? "登录失败");
       return;
     }
-    navigate("/");
+    navigate(searchParams.get("returnTo") || "/");
   }
 
   return (

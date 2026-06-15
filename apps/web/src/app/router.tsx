@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { createBrowserRouter, Navigate } from "react-router-dom";
+import { createBrowserRouter, Navigate, useLocation } from "react-router-dom";
 import { AppLayout } from "../components/layout/AppLayout";
 import { HomePage } from "../pages/HomePage";
 import { InterviewReviewPage } from "../pages/InterviewReviewPage";
@@ -15,7 +15,9 @@ import { useAuthStore } from "../stores/authStore";
 function RequireAuth({ children }: { children: ReactNode }) {
   const currentUser = useAuthStore((state) => state.currentUser);
   const token = useAuthStore((state) => state.token);
-  return currentUser && token ? children : <Navigate to="/login" replace />;
+  const location = useLocation();
+  const returnTo = `${location.pathname}${location.search}`;
+  return currentUser && token ? children : <Navigate to={`/login?returnTo=${encodeURIComponent(returnTo)}`} replace />;
 }
 
 const basename = import.meta.env.BASE_URL === "/" ? undefined : import.meta.env.BASE_URL.replace(/\/$/, "");

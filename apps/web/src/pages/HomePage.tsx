@@ -44,7 +44,7 @@ export function HomePage() {
       <motion.button 
         variants={item}
         className="hero-button" 
-        onClick={() => navigate(isAuthed ? "/interview/setup" : "/login")}
+        onClick={() => navigate(isAuthed ? "/interview/setup" : "/login?returnTo=%2Finterview%2Fsetup")}
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.96 }}
       >
